@@ -1,6 +1,6 @@
 {
   "name": "web-lecture-notes",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "강의자료와 전사본을 설명 중심 학습노트·문제집·편집 원고로 통합하는 모델 독립형 워크플로.",
   "author": {
     "name": "Personal lecture workflow"
@@ -13,6 +13,8 @@
     "developerName": "Personal lecture workflow",
     "category": "Productivity",
     "capabilities": [],
-    "defaultPrompt": ["첨부한 강의자료와 전사본으로 이번 주차의 올인원 학습노트와 문제집을 만들어줘."]
+    "defaultPrompt": [
+      "첨부한 강의자료와 전사본으로 이번 주차의 올인원 학습노트와 문제집을 만들어줘."
+    ]
   }
 }

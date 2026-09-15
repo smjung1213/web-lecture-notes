@@ -82,3 +82,7 @@ li { margin-bottom:1.3mm; }
 .solution h4 { margin:0 0 2mm; }
 .sources { margin-top:6mm; }
 @media screen { body { max-width:190mm; padding:15mm 20mm; margin:0 auto; } }
+
+/* Labels use words as well as color; long solution splits are authored locally. */
+.answer-continuation { break-before:page; }
+.answer-continuation > h3:first-child { margin-top:0; }
