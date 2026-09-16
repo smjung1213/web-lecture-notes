@@ -65,8 +65,8 @@ PDF가 생성되면:
 Python 환경에 WeasyPrint가 있으면 다음처럼 쓴다. `scripts/requirements.txt`는 이 패키지를 시험한 버전이며 매번 재설치를 요구하는 계약이 아니다.
 
 ```text
-python scripts/render.py /작업폴더/notes.html /새출력폴더/과목_W01_학습노트.pdf
-python scripts/render.py /작업폴더/workbook.html /새출력폴더/과목_W01_연습문제.pdf
+python scripts/render.py /작업폴더/notes.html '/새출력폴더/과목명 1주차 학습노트.pdf'
+python scripts/render.py /작업폴더/workbook.html '/새출력폴더/과목명 1주차 연습문제.pdf'
 ```
 
 도우미는 입력 HTML 옆의 CSS·그림을 읽고, 누락된 참조가 있거나 출력 파일이 이미 있으면 중단한다. 외부 URL의 그림·폰트는 가져오지 않는다. 필요한 외부 그림은 사용자가 허용한 범위에서 로컬로 준비하고 출처를 보존한다. 이 도우미의 성공은 내용·시각 검토 완료가 아니다.
