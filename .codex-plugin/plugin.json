@@ -1,6 +1,6 @@
 {
   "name": "web-lecture-notes",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "강의자료와 전사본을 설명 중심 학습노트·문제집·편집 원고로 통합하는 모델 독립형 워크플로.",
   "author": {
     "name": "Personal lecture workflow"
