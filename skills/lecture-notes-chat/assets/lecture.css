@@ -29,7 +29,7 @@ strong { font-weight:700; }
 .supplement { background:var(--lav); color:var(--lav-ink); }
 .fix { background:#f3d9d3; color:#864637; }
 .pending { background:var(--yellow); padding:3mm 4mm; margin:3mm 0; }
-.correction { background:var(--pink); border:.5pt solid var(--pink-rule); border-radius:.7mm; padding:3.5mm 4mm; margin:4mm 0; break-inside:avoid; page-break-inside:avoid; }
+.correction { background:var(--pink); border:.5pt solid var(--pink-rule); border-radius:.7mm; padding:3.5mm 4mm; margin:4mm 0; break-inside:auto; page-break-inside:auto; box-decoration-break:clone; }
 .correction h3 { margin:0 0 2.5mm; }
 .correction-core { break-inside:avoid; }
 .correction-row { display:table; width:100%; margin:1.5mm 0; }
@@ -61,8 +61,8 @@ pre { background:#1e222a; color:#edf0f5; padding:3.5mm 4mm; margin:2mm 0; white-
 pre code { color:inherit; background:none; padding:0; font-size:inherit; }
 .code-wrap { break-inside:avoid; margin:3mm 0; }
 .kw { color:#cbb2ff; } .num { color:#e5bf85; } .str { color:#b9d99c; } .com { color:#adb5bf; }
-sup,sub { font-size:.75em; line-height:0; position:relative; vertical-align:baseline; }
-sup { top:-.5em; } sub { bottom:-.22em; }
+sup,sub { font-size:.75em; line-height:0; position:static; }
+sup { vertical-align:super; } sub { vertical-align:sub; }
 .math { white-space:nowrap; font-variant-numeric:lining-nums; }
 .equation { font-size:11pt; line-height:1.9; margin:3mm 0; }
 .fraction { display:inline-block; vertical-align:middle; text-align:center; line-height:1.2; margin:0 .15em; }
@@ -84,5 +84,35 @@ li { margin-bottom:1.3mm; }
 @media screen { body { max-width:190mm; padding:15mm 20mm; margin:0 auto; } }
 
 /* Labels use words as well as color; long solution splits are authored locally. */
-.answer-continuation { break-before:page; }
+.answer-continuation { break-before:auto; }
 .answer-continuation > h3:first-child { margin-top:0; }
+
+/* Stable reading aids. Topic-specific adjustments belong in local.css. */
+.nowrap,.short-cell { white-space:nowrap; overflow-wrap:normal; }
+.toc a::after { content:leader('.') target-counter(attr(href),page); }
+.toc .toc-sub { font-size:9.5pt; padding-left:4mm; }
+.chapter { break-before:auto; }
+.chapter > h2 { string-set:chapter-title content(); }
+.running { string-set:document-title content(); }
+@page { @top-left { content:string(document-title); font-family:'Noto Sans CJK KR',sans-serif; font-size:7.5pt; color:var(--soft); } @top-right { content:string(chapter-title); font-family:'Noto Sans CJK KR',sans-serif; font-size:7.5pt; color:var(--soft); } }
+@page:first { @top-left { content:none; } @top-right { content:none; } }
+.tag-legend { font-size:9pt; line-height:1.6; color:var(--soft); margin-top:4mm; }
+.review-sheet { break-after:page; }
+.review-sheet li { margin-bottom:2mm; }
+.appendix { break-before:page; }
+.appendix h2 { string-set:chapter-title content(); }
+.reference-table { font-size:9pt; line-height:1.4; }
+.reference-table th,.reference-table td { padding:1mm 1.2mm; }
+.reference-table code { font-size:9pt; background:none; padding:0; }
+.minor-note { font-size:10pt; margin:3mm 0; }
+.table-caption { break-after:avoid; }
+.answer h3,.answer-summary { break-after:avoid; }
+.answer-start,.answer-head,.question-core { break-inside:avoid; }
+.workbook-answer,.answer-group { break-before:auto; }
+
+/* Keep headings with the introductory source line and following explanation. */
+.chapter > h2 + p.source { break-after:avoid; }
+.answers > h2,.answer-group > h2,.sources > h2,.review-sheet > h2,.workbook-question > h2,.practice-page > h2 { string-set:chapter-title content(); }
+
+.correction-row { break-inside:avoid; }
+.wide-numeric { font-size:9pt; }
