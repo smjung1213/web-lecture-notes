@@ -43,8 +43,8 @@ strong { font-weight:700; }
 figure { margin:4mm 0; break-inside:avoid; }
 img { max-width:100%; height:auto; }
 figure>img { display:block; margin:0 auto; }
-.figure-aside { display:table; width:100%; margin:3mm 0; break-inside:avoid; }
-.figure-aside figure { display:table-cell; width:43%; padding-right:4mm; vertical-align:top; }
+.figure-aside { display:table; width:100%; margin:4mm 0; break-inside:auto; }
+.figure-aside figure { display:table-cell; width:var(--figure-width,43%); padding-right:4mm; vertical-align:top; }
 .figure-aside .aside-text { display:table-cell; vertical-align:top; }
 .figure-aside h3 { margin-top:0; }
 table { border-collapse:collapse; width:100%; margin:3mm 0 4mm; font-size:10pt; line-height:1.55; }
@@ -63,7 +63,7 @@ pre code { color:inherit; background:none; padding:0; font-size:inherit; }
 .kw { color:#cbb2ff; } .num { color:#e5bf85; } .str { color:#b9d99c; } .com { color:#adb5bf; }
 sup,sub { font-size:.75em; line-height:0; position:static; }
 sup { vertical-align:super; } sub { vertical-align:sub; }
-.math { white-space:nowrap; font-variant-numeric:lining-nums; }
+.math { white-space:nowrap; font-variant-numeric:lining-nums; } /* Legacy only; new math uses data-latex. */
 .equation { font-size:11pt; line-height:1.9; margin:3mm 0; }
 .fraction { display:inline-block; vertical-align:middle; text-align:center; line-height:1.2; margin:0 .15em; }
 .fraction>.top { display:block; border-bottom:.7pt solid currentColor; padding:0 .18em .12em; }
@@ -116,3 +116,32 @@ li { margin-bottom:1.3mm; }
 
 .correction-row { break-inside:avoid; }
 .wide-numeric { font-size:9pt; }
+
+/* Roles, not paragraph cards. Keep legacy classes for old editable packages. */
+.definition,.key-formula { margin:4mm 0; padding:3mm 4mm; background:#f2f5f6; border-left:2pt solid var(--accent); }
+.definition > h3,.key-formula > h3 { margin:0 0 2mm; font-size:11pt; }
+.definition p:last-child,.key-formula p:last-child { margin-bottom:0; }
+.figure-frame { border:.5pt solid #c7ced3; padding:3mm; background:white; }
+.figure-frame figcaption { margin:2mm 0 0; }
+.figure-aside .aside-text { padding:0; }
+.figure-aside .aside-text + figure { padding-left:4mm; padding-right:0; }
+.figure-aside figure.figure-frame { padding:3mm; }
+.figure-aside figure.figure-frame + .aside-text { padding-left:4mm; }
+.figure-aside.compact { break-inside:avoid; } /* Only genuinely short related units. */
+figure.narrow { width:var(--figure-width,70%); margin-left:auto; margin-right:auto; }
+.source-line,.table-note { font-size:9.5pt; color:var(--soft); line-height:1.55; margin:1.5mm 0 3mm; }
+.correction-note { border-left:1pt solid #a96c60; padding-left:3mm; margin:3mm 0; }
+blockquote { margin:4mm 0; padding-left:4mm; border-left:1pt solid var(--rule); }
+blockquote p { margin:0 0 2mm; }
+blockquote cite { font-style:normal; font-size:9.5pt; color:var(--soft); }
+tbody th[scope="row"] { background:none; border-top:none; border-bottom:.35pt solid #c7ced3; font-weight:600; }
+.math-inline { white-space:nowrap; }
+.math-display { margin:3mm 0; break-inside:avoid; }
+.math-caption { font-size:9.5pt; color:var(--soft); margin:1mm 0 3mm; }
+.math-visual svg { max-width:none; overflow:visible; }
+@media screen and (max-width:650px) {
+  .figure-aside,.figure-aside figure,.figure-aside .aside-text { display:block; width:auto; padding:0; }
+  .figure-aside figure { margin-bottom:3mm; }
+  .figure-aside figure.figure-frame + .aside-text { padding-left:0; }
+  .math-display { overflow-x:auto; } /* Print overflow must be solved by authored line breaks. */
+}

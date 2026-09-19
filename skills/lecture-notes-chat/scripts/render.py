@@ -8,6 +8,9 @@ import os
 import subprocess
 import sys
 import tempfile
+import json
+import hashlib
+import re
 
 
 class References(HTMLParser):
@@ -93,13 +96,24 @@ def css_resources(text):
     yield from walk(tinycss2.parse_component_value_list(text))
 
 
-def check(source):
+def check(source, *, ready=False):
     source = Path(source).resolve()
     if not source.is_file() or source.suffix.lower() not in ('.html', '.htm'):
         raise ValueError('Input must be an existing HTML file')
+    text = source.read_text(encoding='utf-8')
+    result = check_text(text, source)
+    if ready and math_nodes(text):
+        prepared = prepare_html(source)
+        if math_signature(text) != math_signature(prepared):
+            raise ValueError('Math cache is absent/stale; prepare the HTML before delivery')
+        result['math_cache'] = 'REGENERATED_AND_MATCHED'
+    return result
+
+
+def check_text(text, source):
     root = source.parent
     parser = References()
-    parser.feed(source.read_text(encoding='utf-8'))
+    parser.feed(text)
     for target in parser.links:
         if target and target not in parser.ids:
             parser.errors.append(f'Missing internal link target: #{target}')
@@ -120,7 +134,119 @@ def check(source):
         for item in css_resources(style):
             inspect(item, source.as_uri())
     return {'html': str(source), 'resources': len(seen), 'ids': len(parser.ids),
-            'internal_links': len(parser.links)}
+            'internal_links': len(parser.links), 'math_source_count': len(math_nodes(text)),
+            'math_cache': 'NOT_CHECKED'}
+
+
+
+MATH_RENDERER = 'mathjax-3.2.1-svg-base-ams-v1'
+
+
+def math_nodes(text):
+    """LaTeX in data-latex is the only editable formula source; children are caches."""
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(text, 'html.parser')
+    nodes = soup.select('[data-latex]')
+    for n in nodes:
+        classes = n.get('class', [])
+        expected = 'span' if 'math-inline' in classes else 'div' if 'math-display' in classes else None
+        if n.name != expected or ('math-inline' in classes and 'math-display' in classes):
+            raise ValueError('Use span.math-inline or div.math-display with data-latex')
+        if not n['data-latex'].strip() or n.select('[data-latex]'):
+            raise ValueError('Empty/nested math source')
+        if n.get('data-math-renderer') is None and n.decode_contents().strip():
+            raise ValueError('Keep explanations outside math; unprepared math must be empty')
+        if n.get('data-math-renderer') is not None:
+            from bs4 import Tag
+            for child in n.contents:
+                if isinstance(child, Tag):
+                    if child.name != 'span' or not set(child.get('class', [])).intersection({'math-visual', 'math-assistive'}):
+                        raise ValueError('Prepared math children must be generated caches; keep explanations outside math')
+                elif str(child).strip():
+                    raise ValueError('Text inside prepared math would be lost; move explanations outside math')
+    for n in soup.select('.math-inline, .math-display'):
+        if 'data-latex' not in n.attrs:
+            raise ValueError('Math element has no data-latex source')
+    return nodes
+
+
+def math_signature(text):
+    # Structural cache comparison ignores attribute ordering only, not path geometry.
+    return [str(n) for n in math_nodes(text)]
+
+
+def prepare_html(source):
+    """Always regenerate caches from LaTeX. No author JS, network or font download."""
+    from bs4 import BeautifulSoup
+    source = Path(source).resolve()
+    check(source)
+    text = source.read_text(encoding='utf-8')
+    nodes = math_nodes(text)
+    if not nodes:
+        return text  # Legacy/non-math documents remain usable; no silent conversion.
+    payload = [{'latex': n['data-latex'], 'display': 'math-display' in n['class']} for n in nodes]
+    result = subprocess.run(
+        ['node', str(Path(__file__).resolve().with_name('typeset.cjs'))],
+        input=json.dumps(payload, ensure_ascii=False), text=True, encoding='utf-8',
+        capture_output=True, timeout=120, check=False)
+    if result.returncode:
+        raise RuntimeError(result.stderr.strip() or 'MathJax conversion failed')
+    converted = json.loads(result.stdout)
+    if converted.get('renderer') != MATH_RENDERER or len(converted.get('expressions', [])) != len(nodes):
+        raise RuntimeError('Unexpected MathJax conversion result')
+    soup = BeautifulSoup(text, 'html.parser')
+    for n, item, original in zip(soup.select('[data-latex]'), converted['expressions'], payload):
+        fragment = BeautifulSoup(item['html'], 'html.parser')
+        svg = fragment.find('svg')
+        mml = BeautifulSoup(item['mathml'], 'html.parser').find('math')
+        if not svg or not mml:
+            raise RuntimeError('Incomplete SVG/MathML conversion')
+        # SVG presentation + hidden semantic MathML in HTML. This is not PDF/UA.
+        svg['aria-hidden'] = 'true'
+        svg.attrs.pop('role', None)
+        n.clear()
+        visual = soup.new_tag('span', attrs={'class': 'math-visual', 'aria-hidden': 'true'})
+        visual.append(svg)
+        assistive = soup.new_tag('span', attrs={'class': 'math-assistive'})
+        assistive.append(mml)
+        n.append(visual); n.append(assistive)
+        n['data-math-renderer'] = MATH_RENDERER
+        n['data-math-sha256'] = hashlib.sha256(json.dumps(
+            original, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+    # Embedded critical math CSS makes prepared HTML independently viewable.
+    style = soup.find('style', id='static-math-style')
+    if style:
+        style.decompose()
+    style = soup.new_tag('style', id='static-math-style')
+    style.string = MATH_STYLE
+    if not soup.head:
+        raise ValueError('Prepared HTML requires a head element')
+    soup.head.append(style)
+    prepared = str(soup)
+    check_text(prepared, source)
+    return prepared
+
+
+MATH_STYLE = """
+.math-inline { white-space: nowrap; }
+.math-display { margin: 3mm 0; text-align: left; break-inside: avoid; }
+.math-visual { display: inline; }
+.math-visual svg { overflow: visible; max-width: none; }
+.math-assistive { position: absolute; width: 1px; height: 1px; padding: 0;
+  overflow: hidden; clip: rect(1px,1px,1px,1px); white-space: nowrap; }
+@media print { .math-assistive { display: none; } }
+"""
+
+
+def prepare(source, output):
+    source, output = Path(source).resolve(), Path(output).absolute()
+    if output.suffix.lower() not in ('.html', '.htm'):
+        raise ValueError('Prepared output must be HTML')
+    data = prepare_html(source)
+    # If moved, CSS/assets must already exist at their relative destination paths.
+    check_text(data, output)
+    save_new(output, data.encode('utf-8'))
+    print(f'Prepared {output}; SVG/MathML caches derived from editable LaTeX.')
 
 
 def check_fonts(families):
@@ -155,7 +281,7 @@ def render(source, output, fonts=None):
         raise ValueError('Output must have a .pdf extension')
     if os.path.lexists(output):
         raise FileExistsError(f'Choose a new output file: {output}')
-    check(source)
+    prepared = prepare_html(source)
     check_fonts(fonts or ['Noto Sans CJK KR'])
     # Homebrew's shared libraries are not on macOS's default loader path.
     if sys.platform == 'darwin' and Path('/opt/homebrew/lib/libgobject-2.0.dylib').exists():
@@ -181,7 +307,7 @@ def render(source, output, fonts=None):
             raise
     logger.addHandler(handler)
     try:
-        document = HTML(filename=str(source), url_fetcher=fetch).render()
+        document = HTML(string=prepared, base_url=source.as_uri(), url_fetcher=fetch).render()
         data = document.write_pdf()
     finally:
         logger.removeHandler(handler)
@@ -198,11 +324,19 @@ def main():
     parser.add_argument('source', type=Path)
     parser.add_argument('output', type=Path, nargs='?')
     parser.add_argument('--check', action='store_true', help='Check local resources and links without rendering')
+    parser.add_argument('--prepare', action='store_true', help='Write new static HTML, not PDF')
+    parser.add_argument('--ready', action='store_true', help='With --check, regenerate and compare math caches')
     parser.add_argument('--font', action='append', help='Required installed font family; default Noto Sans CJK KR')
     args = parser.parse_args()
     try:
+        if args.prepare and args.check:
+            parser.error('--prepare and --check are mutually exclusive')
+        if args.ready and not args.check:
+            parser.error('--ready requires --check')
         if args.check:
-            print(check(args.source))
+            print(check(args.source, ready=args.ready))
+        elif args.prepare and args.output:
+            prepare(args.source, args.output)
         elif args.output:
             render(args.source, args.output, args.font)
         else:

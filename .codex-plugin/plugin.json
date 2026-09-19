@@ -1,20 +1,20 @@
 {
   "name": "web-lecture-notes",
-  "version": "0.4.1",
-  "description": "강의자료와 전사본을 설명 중심 학습노트·문제집·편집 원고로 통합하는 모델 독립형 워크플로.",
+  "version": "0.5.0",
+  "description": "의미 보존과 역할 기반 표현, MathJax 정적 조판을 연결하는 설명형 강의노트 제작 기준.",
   "author": {
     "name": "Personal lecture workflow"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "올인원 강의노트",
-    "shortDescription": "강의자료·전사본의 설명을 보존하는 주차별 학습노트 제작",
-    "longDescription": "일반 Chat에서 한 과목·한 주차의 자료 검토, 설명형 집필, 문제·정답과 PDF·HTML 산출을 돕습니다. 특정 모델, Work, API, 로컬 제작 엔진을 요구하지 않습니다. PDF 생성은 현재 대화의 파일·코드 도구 제공 여부에 따릅니다.",
+    "shortDescription": "이유·과정·조건을 보존하는 주차별 학습노트 제작",
+    "longDescription": "한 과목·한 주차의 원자료 읽기, 설명형 집필, 문제·정답과 PDF·편집본을 돕습니다. 현재 대화의 모델과 실제 도구를 사용하며 이 메타데이터는 로컬 검토 모델·CLI·권한을 활성화하지 않습니다.",
     "developerName": "Personal lecture workflow",
     "category": "Productivity",
     "capabilities": [],
     "defaultPrompt": [
-      "첨부한 강의자료와 전사본으로 이번 주차의 올인원 학습노트와 문제집을 만들어줘."
+      "지정한 과목·주차·자료 범위를 Google Drive에서 읽고 설명형 학습노트와 문제집을 만들어줘."
     ]
   }
 }

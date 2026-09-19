@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="280" viewBox="0 0 200 280" role="img" aria-labelledby="title desc">
+<title id="title">관찰·기록·해석의 합성 절차</title><desc id="desc">아래로 진행하며 기록 다음에 조건을 확인한다.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1f4b5c"/></marker></defs>
+<g font-family="Noto Sans CJK KR,sans-serif" font-size="20" text-anchor="middle" fill="#17191c">
+<g fill="#f2f5f6" stroke="#708792"><rect x="25" y="10" width="150" height="46" rx="3"/><rect x="25" y="96" width="150" height="46" rx="3"/><rect x="25" y="220" width="150" height="46" rx="3"/></g>
+<text x="100" y="40">관찰</text><text x="100" y="126">기록</text><text x="100" y="250">해석</text>
+<g stroke="#1f4b5c" stroke-width="2" marker-end="url(#arrow)"><path d="M100 57V89"/><path d="M100 143V168"/><path d="M100 195V213"/></g><text x="100" y="187" font-size="17">조건 확인</text></g></svg>
