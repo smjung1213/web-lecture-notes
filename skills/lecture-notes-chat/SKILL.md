@@ -19,7 +19,7 @@ description: 한 과목·한 주차의 지정 원자료로 설명형 한국어 �
 
 ### 1. 범위를 읽고 계약을 남긴다
 
-`input-contract.json`에는 과목·주차, 실제 파일 식별자/버전(가능하면 해시), PDF 물리 페이지와 인쇄 번호의 구별, 전사 범위, learning_contract(reader·prior_knowledge·study_mode·goal), 지침 커밋, 보존 요구와 입력 미확인을 간결하게 적는다. study_mode는 notes_primary(노트만으로 복습·적용) 또는 명시적으로 요청한 source_parallel(원자료 병행)로 적는다. 독자와 목표는 writing.md와 현재 요청으로 확정하며 다른 필수 입력의 없는 정보는 null과 이유로 남긴다. `production-note.md`에서 이 계약을 가리키며 같은 정보를 여러 원장에 복제하지 않는다.
+`input-contract.json`에는 과목·주차, 실제 파일 식별자/버전(가능하면 해시), PDF 물리 페이지와 인쇄 번호의 구별, 전사 범위, learning_contract(reader·prior_knowledge·study_mode·goal), 지침 커밋, 보존 요구와 입력 미확인을 간결하게 적는다. study_mode는 notes_primary(노트만으로 복습·적용) 또는 명시적으로 요청한 source_parallel(원자료 병행)로 적는다. 독자와 목표는 writing.md와 현재 요청으로 확정하며 다른 필수 입력의 없는 정보는 null과 이유로 남긴다. `production-note.md`에서 이 계약을 가리키며 같은 정보를 여러 원장에 복제하지 않는다. 후속 검토에는 이 구조화 계약을 그대로 전달하고 작문·용어 지시에서 독자·목표를 다시 정의하지 않는다. 현재 요청으로 계약이 바뀌면 새 입력 버전을 만들고 이전 검토 결과를 재사용하지 않는다.
 
 보존 요구는 **원본 파일 불변 / 필요한 학습 정보·관계 보존 / 역할에 맞는 표현 허용 / 필요한 설명에 고정 분량 제한 없음**으로 구분한다. 과거 `모든 시각자료 보존` 필드는 모든 이미지의 재삽입을 뜻하지 않는다. 구 계약을 읽을 때 이 해석을 제작 메모에 한 번 밝히고 원자료 대조는 유지한다.
 
