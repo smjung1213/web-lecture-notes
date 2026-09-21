@@ -27,6 +27,6 @@ GitHub 플러그인으로 https://github.com/smjung1213/web-lecture-notes 의 �
 
 전달 파일은 `<과목명> <N>주차 학습노트.pdf`, `<과목명> <N>주차 연습문제.pdf`, 같은 내용의 `<과목명> <N>주차 편집본.zip`이야. 띄어쓰기와 앞자리 0 없는 주차를 사용해줘. 편집 ZIP에는 HTML·CSS·사용 자산·LaTeX와 정적 수식·input-contract/source-inventory/coverage/production-note 및 실제 재생성 도우미·의존성 안내를 넣어줘. 실행에 사용한 폰트는 이름으로 기록하되 폰트 파일·node_modules·원시 외부 로그를 넣지 마. 전달 직전 실제 다운로드 PDF의 해시·쪽수·주요 그림 구성을 편집 ZIP과 제작 메모의 같은 revision에 대조하고, 서로 다른 버전이면 맞춘 뒤 전달해줘.
 
-후속 내용 검토는 로컬 lecture-week의 현재 검토 모드에서 하나를 선택해. 기본은 같은 고정 원고에 대한 Astra Medium·Claude Opus 5 High의 독립 검토야. 사용자가 Sol 분할 검토를 지정하면 Sol High가 원자료 범위를 나눠 대조하고 Astra가 완료 결과·전체 경량 본문·쟁점과 원자료 표본을 확인해. Sol 경로에 Claude나 부모의 원자료 전수 재검토를 자동 추가하지 마. 어느 경로든 내용 판정·필요 수정 후 Gemini 3.8 Flash High의 큰 파트별 새 세션 작문 검토 → Astra 제안 판정·반영 → 최종 PDF 재생성·전 페이지 확인·허용된 저장으로 이어져. 실행 세부는 로컬 지침이 정하며, 이 웹 대화에서 외부 검토·로컬 저장을 실행했다고 가정하지 마.
+후속은 로컬 lecture-week에 따라 같은 고정 원고에 대한 Astra Medium·Claude Opus 5 High의 독립 검토 → Astra의 내용 판정·필요 수정 → Gemini 3.8 Flash High의 큰 파트별 새 세션 작문 검토 → Astra 제안 판정·반영 → 최종 PDF 재생성·전 페이지 확인·허용된 저장으로 이어져. 실행 세부는 로컬 지침이 정하며, 이 웹 대화에서 외부 검토·로컬 저장을 실행했다고 가정하지 마.
 
 설명 충분성·현재 위치의 반복 보존·전문 확장의 범위는 writing.md의 공통 기준을 적용해줘.
