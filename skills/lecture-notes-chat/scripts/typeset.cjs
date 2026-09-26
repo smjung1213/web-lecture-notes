@@ -10,6 +10,22 @@ function mj(file) { return require(root ? path.join(root, file) : 'mathjax-full/
 try {
   const version = mj('package.json').version;
   if (version !== '3.2.1') throw new Error('MATHJAX_VERSION: expected 3.2.1');
+  if (process.argv.includes('--identity')) {
+    const crypto = require('crypto');
+    const packageRoot = path.dirname(require.resolve(root ? path.join(root, 'package.json') : 'mathjax-full/package.json'));
+    const hash = crypto.createHash('sha256');
+    function walk(dir) {
+      for (const entry of fs.readdirSync(dir, {withFileTypes: true}).sort((a,b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) {
+        const file = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(file);
+        else if (entry.isFile()) { hash.update(path.relative(packageRoot, file)); hash.update('\0'); hash.update(fs.readFileSync(file)); }
+      }
+    }
+    hash.update(fs.readFileSync(path.join(packageRoot, 'package.json')));
+    walk(path.join(packageRoot, 'js'));
+    process.stdout.write(JSON.stringify({version, js_sha256: hash.digest('hex'), node: process.version}));
+    process.exit(0);
+  }
   const {mathjax} = mj('js/mathjax.js');
   const {TeX} = mj('js/input/tex.js');
   const {SVG} = mj('js/output/svg.js');
@@ -41,7 +57,7 @@ try {
     if (/merror|data-mjx-error/.test(html + mml)) throw new Error(`MATH_ERROR at index ${i}`);
     return {html, mathml: mml};
   });
-  process.stdout.write(JSON.stringify({renderer: 'mathjax-3.2.1-svg-base-ams-v1', expressions: result}));
+  process.stdout.write(JSON.stringify({renderer: 'mathjax-3.2.1-svg-base-ams-v2', expressions: result}));
 } catch (e) {
   process.stderr.write('Static math stopped: ' + e.message + '\n');
   process.exitCode = 1;

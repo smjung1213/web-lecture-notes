@@ -26,7 +26,7 @@ class References(HTMLParser):
             if a['id'] in self.ids:
                 self.errors.append(f"Duplicate id: {a['id']}")
             self.ids.add(a['id'])
-        if tag == 'a' and a.get('href', '').startswith('#'):
+        if tag == 'a' and (a.get('href') or '').startswith('#'):
             self.links.append(unquote(a['href'][1:]))
         if tag in ('img', 'source'):
             if tag == 'img' and not a.get('src'):
@@ -35,14 +35,17 @@ class References(HTMLParser):
                 self.resources.append(a['src'])
             if a.get('srcset'):
                 self.errors.append('Use one explicit bundled src instead of srcset')
-        if tag == 'link' and 'stylesheet' in a.get('rel', '').split():
+        if tag == 'link' and 'stylesheet' in (a.get('rel') or '').split():
             self.resources.append(a.get('href', ''))
         if tag in ('script', 'base', 'iframe', 'object', 'embed'):
             self.errors.append(f'Unsupported active/base element: {tag}')
         if any(k.lower().startswith('on') for k in a):
             self.errors.append('Inline event handlers are unsupported')
         if 'style' in a:
-            self.styles.append(a['style'])
+            if a['style'] is None:
+                self.errors.append('Empty style attribute')
+            else:
+                self.styles.append(a['style'])
         if tag == 'style':
             self.in_style = True
 
@@ -69,31 +72,10 @@ def local_resource(url, root):
     return path
 
 
-def css_resources(text):
-    import tinycss2
-    def walk(tokens):
-        for token in tokens:
-            if token.type == 'url':
-                yield token.value
-            elif token.type == 'function' and token.lower_name == 'url':
-                values = [t for t in token.arguments if t.type not in ('whitespace', 'comment')]
-                if len(values) != 1 or values[0].type != 'string':
-                    raise ValueError('Malformed CSS url()')
-                yield values[0].value
-            elif hasattr(token, 'content') and token.content is not None:
-                yield from walk(token.content)
-            elif hasattr(token, 'arguments'):
-                yield from walk(token.arguments)
-    rules = tinycss2.parse_stylesheet(text, skip_comments=True, skip_whitespace=True)
-    for rule in rules:
-        if rule.type == 'at-rule' and rule.lower_at_keyword == 'import':
-            values = [t for t in rule.prelude if t.type not in ('whitespace', 'comment')]
-            if values and values[0].type == 'string':
-                yield values[0].value
-        yield from walk(getattr(rule, 'prelude', []))
-        yield from walk(getattr(rule, 'content', None) or [])
-    # Inline declarations also appear as parser error tokens; scan their components.
-    yield from walk(tinycss2.parse_component_value_list(text))
+# The managed engine loads this file through an internal symlink; resolve its
+# owner so direct CLI, package imports and standalone rebuild share one parser.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from css_resources import css_resources
 
 
 def check(source, *, ready=False):
@@ -103,6 +85,9 @@ def check(source, *, ready=False):
     text = source.read_text(encoding='utf-8')
     result = check_text(text, source)
     if ready and math_nodes(text):
+        versions = {n.get('data-math-renderer') for n in math_nodes(text)}
+        if versions - {None, MATH_RENDERER}:
+            raise ValueError('MATH_RENDERER_CHANGED: preserve old revision; prepare a new copy with the managed renderer, then render and inspect the final PDF')
         prepared = prepare_html(source)
         if math_signature(text) != math_signature(prepared):
             raise ValueError('Math cache is absent/stale; prepare the HTML before delivery')
@@ -139,7 +124,7 @@ def check_text(text, source):
 
 
 
-MATH_RENDERER = 'mathjax-3.2.1-svg-base-ams-v1'
+MATH_RENDERER = 'mathjax-3.2.1-svg-base-ams-v2'
 
 
 def math_nodes(text):
@@ -154,6 +139,12 @@ def math_nodes(text):
             raise ValueError('Use span.math-inline or div.math-display with data-latex')
         if not n['data-latex'].strip() or n.select('[data-latex]'):
             raise ValueError('Empty/nested math source')
+        latex = n['data-latex'].strip()
+        if (latex.startswith('$$') or latex.endswith('$$') or latex.startswith('\\[') or latex.endswith('\\]')
+                or latex.startswith('\\(') or latex.endswith('\\)')
+                or (latex.startswith('$') and not latex.startswith('\\$'))
+                or (latex.endswith('$') and not latex.endswith('\\$'))):
+            raise ValueError('Remove outer TeX delimiters from data-latex')
         if n.get('data-math-renderer') is None and n.decode_contents().strip():
             raise ValueError('Keep explanations outside math; unprepared math must be empty')
         if n.get('data-math-renderer') is not None:
@@ -173,6 +164,26 @@ def math_nodes(text):
 def math_signature(text):
     # Structural cache comparison ignores attribute ordering only, not path geometry.
     return [str(n) for n in math_nodes(text)]
+
+
+
+def inline_table_rules(svg):
+    """MathJax 3.2.1 SVGmtable CSS, in SVG user units (1000/em).
+
+    setLineThickness emits stroke-thickness, which SVG does not understand;
+    bridge it to stroke-width, preserving the supplied custom dash lengths.
+    Only generated table rules are touched; glyphs/boxed/matrix paths are not.
+    """
+    for rule in svg.select('line[data-line], rect[data-frame]'):
+        rule['stroke'] = rule.get('stroke', 'currentColor')
+        rule['stroke-width'] = rule.get('stroke-width', rule.get('stroke-thickness', '70'))
+        rule['fill'] = 'none'
+        classes = rule.get('class', [])
+        if 'mjx-dotted' in classes:
+            rule['stroke-linecap'] = rule.get('stroke-linecap', 'round')
+            rule['stroke-dasharray'] = rule.get('stroke-dasharray', '0,140')
+        elif 'mjx-dashed' in classes:
+            rule['stroke-dasharray'] = rule.get('stroke-dasharray', '140')
 
 
 def prepare_html(source):
@@ -202,6 +213,7 @@ def prepare_html(source):
         if not svg or not mml:
             raise RuntimeError('Incomplete SVG/MathML conversion')
         # SVG presentation + hidden semantic MathML in HTML. This is not PDF/UA.
+        inline_table_rules(svg)
         svg['aria-hidden'] = 'true'
         svg.attrs.pop('role', None)
         n.clear()
@@ -249,13 +261,37 @@ def prepare(source, output):
     print(f'Prepared {output}; SVG/MathML caches derived from editable LaTeX.')
 
 
+DEFAULT_FONTS = ['Noto Sans CJK KR', 'Noto Sans Mono CJK KR']
+
+
 def check_fonts(families):
+    identities = {}
     for family in families:
         result = subprocess.run(['fc-match', '-f', '%{family}', family],
                                 text=True, capture_output=True, check=True, timeout=10)
         found = [s.strip().casefold() for s in result.stdout.split(',')]
         if family.casefold() not in found:
             raise RuntimeError(f'Required font unavailable: {family} (matched {result.stdout})')
+        files = subprocess.run(['fc-match', '-f', '%{file}', family], text=True, capture_output=True, check=True, timeout=10)
+        identities[family] = hashlib.sha256(Path(files.stdout).read_bytes()).hexdigest()
+    return identities
+
+
+
+def renderer_identity(source, fonts=None):
+    """Byte identity of executable inputs plus the actual installed dependencies."""
+    from importlib.metadata import version
+    scripts = Path(__file__).resolve().parent
+    identity = {'files': {name: hashlib.sha256((scripts/name).read_bytes()).hexdigest()
+                         for name in ('render.py', 'css_resources.py', 'typeset.cjs',
+                                      'requirements.txt', 'package.json', 'package-lock.json')},
+                'python_packages': {name: version(name) for name in ('weasyprint', 'beautifulsoup4', 'tinycss2')},
+                'fonts': check_fonts(fonts or DEFAULT_FONTS)}
+    if math_nodes(Path(source).read_text(encoding='utf-8')):
+        result = subprocess.run(['node', str(scripts/'typeset.cjs'), '--identity'],
+                                capture_output=True, text=True, check=True, timeout=120)
+        identity['mathjax'] = json.loads(result.stdout)
+    return identity
 
 
 def save_new(output, data):
@@ -279,10 +315,12 @@ def render(source, output, fonts=None):
     source, output = Path(source).resolve(), Path(output).absolute()
     if output.suffix.lower() != '.pdf':
         raise ValueError('Output must have a .pdf extension')
-    if os.path.lexists(output):
-        raise FileExistsError(f'Choose a new output file: {output}')
+    receipt_path = output.with_name(output.name + '.render.json')
+    if os.path.lexists(output) or os.path.lexists(receipt_path):
+        raise FileExistsError(f'Choose a new output file and receipt: {output}')
+    source_sha = hashlib.sha256(source.read_bytes()).hexdigest()
+    identity = renderer_identity(source, fonts)
     prepared = prepare_html(source)
-    check_fonts(fonts or ['Noto Sans CJK KR'])
     # Homebrew's shared libraries are not on macOS's default loader path.
     if sys.platform == 'darwin' and Path('/opt/homebrew/lib/libgobject-2.0.dylib').exists():
         os.environ.setdefault('DYLD_FALLBACK_LIBRARY_PATH', '/opt/homebrew/lib')
@@ -291,6 +329,7 @@ def render(source, output, fonts=None):
     except (ImportError, OSError) as exc:
         raise RuntimeError('WeasyPrint or its native libraries are unavailable; no PDF created') from exc
     failed = []
+    resources = {}
     class ResourceErrors(logging.Handler):
         def emit(self, record):
             message = record.getMessage()
@@ -300,7 +339,9 @@ def render(source, output, fonts=None):
     logger = logging.getLogger('weasyprint')
     def fetch(url):
         try:
-            local_resource(url, source.parent)
+            local = local_resource(url, source.parent)
+            if local is not None:
+                resources[str(local.relative_to(source.parent))] = hashlib.sha256(local.read_bytes()).hexdigest()
             return default_url_fetcher(url)
         except Exception as exc:
             failed.append(str(exc))
@@ -315,7 +356,21 @@ def render(source, output, fonts=None):
         raise RuntimeError('Resource/font/render failure; no PDF saved:\n' + '\n'.join(failed))
     if not document.pages or not data.startswith(b'%PDF-'):
         raise RuntimeError('Renderer did not produce a PDF')
+    if hashlib.sha256(source.read_bytes()).hexdigest() != source_sha or any(
+            hashlib.sha256((source.parent/name).read_bytes()).hexdigest() != h for name,h in resources.items()):
+        raise RuntimeError('RENDER_INPUT_CHANGED: no PDF saved')
+    if renderer_identity(source, fonts) != identity:
+        raise RuntimeError('RENDER_TOOLCHAIN_CHANGED: no PDF saved')
+    from importlib.metadata import version
+    receipt = {'render_receipt_version':1, 'source_name':source.name, 'source_sha256':source_sha,
+               'prepared_sha256':hashlib.sha256(prepared.encode('utf-8')).hexdigest(),
+               'resources':resources, 'math_renderer':MATH_RENDERER,
+               'renderer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+               'toolchain':identity,
+               'weasyprint_version':version('weasyprint'), 'font_families':fonts or DEFAULT_FONTS,
+               'pdf_sha256':hashlib.sha256(data).hexdigest(), 'pages':len(document.pages)}
     save_new(output, data)
+    save_new(receipt_path, (json.dumps(receipt,ensure_ascii=False,indent=2)+'\n').encode('utf-8'))
     print(f'Created {output} ({len(document.pages)} pages). Content and visual review are still required.')
 
 
@@ -326,7 +381,7 @@ def main():
     parser.add_argument('--check', action='store_true', help='Check local resources and links without rendering')
     parser.add_argument('--prepare', action='store_true', help='Write new static HTML, not PDF')
     parser.add_argument('--ready', action='store_true', help='With --check, regenerate and compare math caches')
-    parser.add_argument('--font', action='append', help='Required installed font family; default Noto Sans CJK KR')
+    parser.add_argument('--font', action='append', help='Required installed font family; default Noto Sans CJK KR + Noto Sans Mono CJK KR')
     args = parser.parse_args()
     try:
         if args.prepare and args.check:
