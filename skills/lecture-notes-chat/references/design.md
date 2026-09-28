@@ -56,7 +56,7 @@ python scripts/render.py /정적편집폴더/notes.html --check --ready
 
 ### 전달·검색·접근성은 별개다
 
-전달 HTML은 LaTeX와 정적 SVG/MathML을 함께 가진다. 수식 캐시를 손으로 고치지 않고 `data-latex`를 수정한 뒤 준비·렌더한다. 웹에서 보이는 HTML은 네트워크 없이 수식 모양을 표시할 수 있으나, LaTeX로부터 다시 생성하려면 명시한 실행 환경이 필요하다. 로컬 `pack`은 관리 렌더러로 캐시를 갱신한 HTML을 ZIP에 넣고 실제 재생성 스크립트와 의존성 안내를 포함한다. 입력 폴더를 몰래 갱신하지 않는다. 웹 수동 포장도 같은 계약을 지킨다.
+전달 HTML은 LaTeX와 정적 SVG/MathML을 함께 가진다. 수식 캐시를 손으로 고치지 않고 `data-latex`를 수정한 뒤 준비·렌더한다. 웹에서 보이는 HTML은 네트워크 없이 수식 모양을 표시할 수 있으나, LaTeX로부터 다시 생성하려면 명시한 실행 환경이 필요하다. 로컬 `pack`은 관리 렌더러로 캐시를 갱신한 HTML을 ZIP에 넣고 실제 재생성 스크립트와 의존성 안내를 포함한다. 입력 폴더를 몰래 갱신하지 않는다. 웹 인계는 [delivery.md](delivery.md)의 전달 도우미로 이미 확인한 PDF와 원고를 묶으며 수동으로 PDF·ZIP을 따로 선택하지 않는다.
 
 PDF의 수식은 SVG 경로로 그려지므로 수식 텍스트가 일반 텍스트 추출·검색·복사에 나타나지 않을 수 있다. 이는 시각 누락과 별개이며 투명 문자로 추출을 억지로 맞추지 않는다. 편집/검색용 LaTeX와 보조기술용 MathML을 HTML에 남기는 것은 PDF 수식의 검색·복사 성공이나 PDF/UA 인증이 아니다. HTML MathML도 실제 스크린리더 동작을 시험하지 않았다면 지원 가능 구조로만 보고한다. 필요한 독자용 기호 설명·조건은 보이는 본문에 남긴다.
 
@@ -114,3 +114,5 @@ PDF의 수식은 SVG 경로로 그려지므로 수식 텍스트가 일반 텍스
 기본 필수 글꼴은 본문 `Noto Sans CJK KR`과 코드 `Noto Sans Mono CJK KR`이다. 다른 글꼴을 쓰면 CSS와 모든 필수 `--font`를 함께 지정한다. PDF 옆 `.render.json`은 준비 HTML, 실제 읽은 자산, render/css_resources/typeset와 의존성 명세의 해시, 설치된 Python 패키지 버전, MathJax js 트리 해시·Node 버전, 실제 글꼴 파일 해시를 기록한다. 도구의 파일 경로는 환경마다 달라질 수 있으므로 비교에는 바이트·버전을 사용한다. 렌더 전후 정체성이 달라지면 중단한다.
 
 웹 편집 ZIP은 PDF를 만든 동일 도구의 여섯 파일(render.py, css_resources.py, typeset.cjs, requirements.txt, package.json, package-lock.json)을 `rebuild/`에 넣는다. 두 HTML은 `--prepare`한 사본으로 넣고, 그 SHA-256이 해당 PDF 영수증의 prepared_sha256과 같은지 확인한다. 영수증 두 개와 재생성 명령은 제작 메모에서 역할별로 연결해 전달한다. 원고·자산·도구를 바꾸면 새 PDF와 영수증을 만든다. 로컬 Codex 인계에서 이 연결을 다시 검사한다. 감사 기록 재검증과 PDF 재생성은 별도 작업이다.
+
+웹 전달 세트는 [delivery.md](delivery.md)를 따른다. 재생성 해시가 다르다는 이유만으로 원고 차이를 단정하지 않는다. 원고·자산의 위치가 바뀌면 그림 URL 기반 PDF 식별자가 바뀔 수 있다. 포장 중 재렌더하지 않고 이미 확인한 PDF 바이트를 그대로 복사한다.
