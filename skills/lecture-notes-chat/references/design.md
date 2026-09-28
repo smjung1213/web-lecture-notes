@@ -38,7 +38,7 @@
 
 ### 실제 렌더링 경로
 
-`render.py` → 신뢰하는 `typeset.cjs` → **MathJax 3.2.1 (base+AMS), fontCache:none** → 정적 SVG/HTML용 MathML → **WeasyPrint 68.0** → PDF다. MathJax 3.2.1을 고정한 경로이며 최신 버전이라고 하지 않는다. 다른 버전으로 자동 fallback하지 않는다. 업그레이드 시 같은 회귀 검사를 다시 한다.
+`render.py` → 신뢰하는 `typeset.cjs` → **MathJax 3.2.1 (base+AMS), fontCache:none** → 정적 SVG/HTML용 MathML → **WeasyPrint 70.0** → PDF다. MathJax 3.2.1을 고정한 경로이며 최신 버전이라고 하지 않는다. 다른 버전으로 자동 fallback하지 않는다. 업그레이드 시 같은 회귀 검사를 다시 한다.
 
 WeasyPrint는 HTML 안의 JavaScript를 실행하지 않는다. 관리 렌더러도 `<script>`·이벤트 핸들러·iframe 등을 거부한다. MathJax CDN 스크립트만 붙이는 방식은 지원하지 않는다. 오직 신뢰하는 Node 프로그램에서 LaTeX를 변환하며 원고 안의 JS는 실행하지 않는다. base+AMS 외의 자동 패키지 로드·임의 HTML·외부 URL·공유 매크로는 지원하지 않는다. 미지원 명령·잘못된 식·버전 불일치·Node 부재는 중단 사유다. 한 식은 최대 20,000자, 변환 호출 제한은 120초다. 제한에 걸리면 의미 단위로 나누거나 제한의 필요를 검토하고 설명을 삭제하지 않는다.
 
@@ -116,3 +116,5 @@ PDF의 수식은 SVG 경로로 그려지므로 수식 텍스트가 일반 텍스
 웹 편집 ZIP은 PDF를 만든 동일 도구의 여섯 파일(render.py, css_resources.py, typeset.cjs, requirements.txt, package.json, package-lock.json)을 `rebuild/`에 넣는다. 두 HTML은 `--prepare`한 사본으로 넣고, 그 SHA-256이 해당 PDF 영수증의 prepared_sha256과 같은지 확인한다. 영수증 두 개와 재생성 명령은 제작 메모에서 역할별로 연결해 전달한다. 원고·자산·도구를 바꾸면 새 PDF와 영수증을 만든다. 로컬 Codex 인계에서 이 연결을 다시 검사한다. 감사 기록 재검증과 PDF 재생성은 별도 작업이다.
 
 웹 전달 세트는 [delivery.md](delivery.md)를 따른다. 재생성 해시가 다르다는 이유만으로 원고 차이를 단정하지 않는다. 원고·자산의 위치가 바뀌면 그림 URL 기반 PDF 식별자가 바뀔 수 있다. 포장 중 재렌더하지 않고 이미 확인한 PDF 바이트를 그대로 복사한다.
+
+WeasyPrint 70.0 전환 시 과거 68.x의 PDF·영수증·재생성 도구는 원본대로 보존한다. 새 후보에서 관리 도구를 갱신하고 70.0으로 렌더·대조한다. 옛 영수증의 버전/해시를 바꾸거나 다른 버전으로 자동 fallback하지 않는다. URLFetcher는 file/data만 허용하고 원고 폴더 밖 자산을 거부하며, 중첩 SVG/CSS에도 같은 검사와 자산 해시 기록을 적용한다. 글꼴 수명 오류 수정과 PDF의 의미·시각 검토 완료는 별개다.

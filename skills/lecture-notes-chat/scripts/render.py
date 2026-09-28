@@ -325,7 +325,7 @@ def render(source, output, fonts=None):
     if sys.platform == 'darwin' and Path('/opt/homebrew/lib/libgobject-2.0.dylib').exists():
         os.environ.setdefault('DYLD_FALLBACK_LIBRARY_PATH', '/opt/homebrew/lib')
     try:
-        from weasyprint import HTML, default_url_fetcher
+        from weasyprint import HTML, URLFetcher
     except (ImportError, OSError) as exc:
         raise RuntimeError('WeasyPrint or its native libraries are unavailable; no PDF created') from exc
     failed = []
@@ -337,18 +337,20 @@ def render(source, output, fonts=None):
                 failed.append(message)
     handler = ResourceErrors()
     logger = logging.getLogger('weasyprint')
-    def fetch(url):
-        try:
-            local = local_resource(url, source.parent)
-            if local is not None:
-                resources[str(local.relative_to(source.parent))] = hashlib.sha256(local.read_bytes()).hexdigest()
-            return default_url_fetcher(url)
-        except Exception as exc:
-            failed.append(str(exc))
-            raise
+    class LocalFetcher(URLFetcher):
+        def fetch(self, url, headers=None):
+            try:
+                local = local_resource(url, source.parent)
+                if local is not None:
+                    resources[str(local.relative_to(source.parent))] = hashlib.sha256(local.read_bytes()).hexdigest()
+                return super().fetch(url, headers)
+            except Exception as exc:
+                failed.append(str(exc))
+                raise
+    fetcher = LocalFetcher(allowed_protocols={'file', 'data'}, allow_redirects=False)
     logger.addHandler(handler)
     try:
-        document = HTML(string=prepared, base_url=source.as_uri(), url_fetcher=fetch).render()
+        document = HTML(string=prepared, base_url=source.as_uri(), url_fetcher=fetcher).render()
         data = document.write_pdf()
     finally:
         logger.removeHandler(handler)
