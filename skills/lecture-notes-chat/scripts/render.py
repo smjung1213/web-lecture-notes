@@ -261,7 +261,7 @@ def prepare(source, output):
     print(f'Prepared {output}; SVG/MathML caches derived from editable LaTeX.')
 
 
-DEFAULT_FONTS = ['Noto Sans CJK KR', 'Noto Sans Mono CJK KR']
+DEFAULT_FONTS = ['Noto Serif CJK KR', 'Noto Sans CJK KR', 'Noto Sans Mono CJK KR']
 
 
 def check_fonts(families):
@@ -383,7 +383,7 @@ def main():
     parser.add_argument('--check', action='store_true', help='Check local resources and links without rendering')
     parser.add_argument('--prepare', action='store_true', help='Write new static HTML, not PDF')
     parser.add_argument('--ready', action='store_true', help='With --check, regenerate and compare math caches')
-    parser.add_argument('--font', action='append', help='Required installed font family; default Noto Sans CJK KR + Noto Sans Mono CJK KR')
+    parser.add_argument('--font', action='append', help='Required installed font family; default Noto Serif CJK KR + Noto Sans CJK KR + Noto Sans Mono CJK KR')
     args = parser.parse_args()
     try:
         if args.prepare and args.check:

@@ -1,147 +1,233 @@
-:root {
-  --ink:#17191c; --soft:#50565d; --accent:#1f4b5c; --rule:#b8c1c7;
-  --mint:#e5f2ed; --mint-ink:#315e4e; --lav:#efebf8; --lav-ink:#615078;
-  --pink:#fdf3f1; --pink-rule:#eac3bd; --yellow:#fdf5e3;
-}
-@page {
-  size:A4; margin:22mm 30mm 20mm;
-  @bottom-center { content:counter(page); font-family:sans-serif; font-size:8.5pt; color:#50565d; }
-}
-* { box-sizing:border-box; }
-html { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
-body { margin:0; color:var(--ink); background:white; font-family:'Noto Sans CJK KR','Noto Sans KR','Noto Sans CJK SC','Apple SD Gothic Neo',sans-serif; font-size:10.5pt; line-height:1.72; text-align:left; word-break:keep-all; overflow-wrap:break-word; }
-h1,h2,h3,h4 { color:var(--ink); break-after:avoid; page-break-after:avoid; }
-h1 { font-size:23pt; line-height:1.3; margin:0 0 4mm; padding-bottom:3mm; border-bottom:.7pt solid var(--accent); }
-h2 { font-size:16pt; line-height:1.45; margin:7mm 0 3mm; }
-h3 { font-size:12.5pt; line-height:1.5; margin:5mm 0 2.5mm; }
-h4 { font-size:11pt; margin:3mm 0 2mm; }
-p { margin:0 0 2.6mm; orphans:3; widows:3; }
-a { color:var(--accent); text-decoration:underline; }
-strong { font-weight:700; }
-.kicker { color:var(--accent); font-size:9.5pt; margin:0 0 2mm; }
+/* 디자인 기준 v3.4 (2026-09-29). v1 선택자를 보존하며 확정 규칙을 병합했다.
+   새 노트에만 적용한다. 기존 노트·편집본은 동봉 CSS를 유지한다.
+   호환용으로 표시한 선택자는 새 집필에 쓰지 않는다. */
+:root {  --ink:#1b1e22; --soft:#525a61; --rule:#b8c1c7; --accent:#1f5a6b;
+  --def:#1f5a6b;  --def-tint:#edf3f4;
+  --lec:#c62828; /* 수업 강조: 빨간 물결 */
+  --key-mark:#fde48c;
+  --sum:#3b4852;
+  --ans:#2c7a4b;  --ans-tint:#e8f3eb;
+  --fix:#b3261e;
+
+  --mint:#e5f2ed; --mint-ink:#315e4e; --lav:#efebf8; --lav-ink:#615078; --pink:#fdf3f1; --pink-rule:#eac3bd; --yellow:#fdf5e3; }
+* {  box-sizing:border-box; }
+html {  print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+body {  margin:0; color:var(--ink); background:white; font-family:"Noto Serif CJK KR","Noto Serif KR",serif; font-size:10.5pt; line-height:1.72; text-align:left; word-break:keep-all; overflow-wrap:break-word; }
+h1 {  color:var(--ink); break-after:avoid; page-break-after:avoid; font-family:"Noto Sans CJK KR",sans-serif; font-size:24pt; line-height:1.3; margin:0 0 2mm; }
+h2 {  color:var(--ink); break-after:avoid; page-break-after:avoid; font-family:"Noto Sans CJK KR",sans-serif; font-size:17pt; line-height:1.4; margin:14mm 0 5mm; }
+h3 {  color:var(--ink); break-after:avoid; page-break-after:avoid; font-family:"Noto Sans CJK KR",sans-serif; font-size:12.5pt; line-height:1.5; margin:10mm 0 3mm; }
+h4 {  color:var(--ink); break-after:avoid; page-break-after:avoid; font-family:"Noto Sans CJK KR",sans-serif; font-size:11pt; margin:6mm 0 2mm; color:var(--def); }
+p {  margin:0 0 4.8mm; orphans:3; widows:3; }
+a {  color:var(--accent); text-decoration:underline; }
+strong {  font-weight:700; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .frontmatter { break-after:page; }
-.scope,.goal { margin:2mm 0; }
-.toc { margin:6mm 0 0; }
-.toc a { display:block; padding:1.3mm 0; border-bottom:.3pt solid #d9dde0; text-decoration:none; }
-.source,figcaption,.code-caption { font-size:9.5pt; line-height:1.55; color:#45535d; margin:2mm 0 3mm; }
-.tag { display:inline-block; white-space:nowrap; font-size:8.5pt; line-height:1.5; font-weight:500; margin-left:1.5mm; padding:.3mm 1.5mm; border-radius:.6mm; vertical-align:middle; }
-.teacher,.answer-tag { background:var(--mint); color:var(--mint-ink); }
-.supplement { background:var(--lav); color:var(--lav-ink); }
-.fix { background:#f3d9d3; color:#864637; }
-.pending { background:var(--yellow); padding:3mm 4mm; margin:3mm 0; }
-.correction { background:var(--pink); border:.5pt solid var(--pink-rule); border-radius:.7mm; padding:3.5mm 4mm; margin:4mm 0; break-inside:auto; page-break-inside:auto; box-decoration-break:clone; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.scope { margin:2mm 0; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.goal { margin:2mm 0; }
+.toc {  font-family:"Noto Sans CJK KR",sans-serif; margin:0; }
+.toc a {  display:block; padding:1.1mm 0; text-decoration:none; color:var(--ink); }
+.source { font-family:'Noto Sans CJK KR',sans-serif; font-size:9.5pt; line-height:1.55; color:#45535d; margin:2mm 0 3mm; }
+figcaption {  font-family:"Noto Sans CJK KR",sans-serif; font-size:9.5pt; line-height:1.55; color:#45535d; margin:2mm 0 3mm; }
+.code-caption {  font-family:"Noto Sans CJK KR",sans-serif; font-size:9.5pt; line-height:1.55; color:#45535d; margin:2mm 0 3mm; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.tag { display:inline-block; white-space:nowrap; font-size:8.5pt; line-height:1.5; font-weight:500; margin-left:1.5mm; padding:.3mm 1.5mm;  vertical-align:middle; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.teacher { color:var(--def); }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.answer-tag { color:var(--ans); }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.supplement { color:var(--soft); }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.fix { color:var(--fix); }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.pending { color:var(--fix); margin:4.8mm 0; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.correction { margin:4.8mm 0; break-inside:auto; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .correction h3 { margin:0 0 2.5mm; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .correction-core { break-inside:avoid; }
-.correction-row { display:table; width:100%; margin:1.5mm 0; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.correction-row { display:table; width:100%; margin:1.5mm 0; break-inside:avoid; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .label { display:table-cell; width:21mm; padding-right:2mm; font-size:10pt; font-weight:600; vertical-align:top; background:none; border:none; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .value { display:table-cell; vertical-align:top; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .original-label { color:#60656b; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .corrected-label { color:#2f684d; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .evidence-label { color:#2d5f83; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .reason { border-top:.4pt solid var(--pink-rule); margin-top:2.5mm; padding-top:2.5mm; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .reason p:last-child { margin-bottom:0; }
-figure { margin:4mm 0; break-inside:avoid; }
-img { max-width:100%; height:auto; }
-figure>img { display:block; margin:0 auto; }
-.figure-aside { display:table; width:100%; margin:4mm 0; break-inside:auto; }
-.figure-aside figure { display:table-cell; width:var(--figure-width,43%); padding-right:4mm; vertical-align:top; }
-.figure-aside .aside-text { display:table-cell; vertical-align:top; }
+figure {  margin:6mm 0; break-inside:avoid; }
+img {  max-width:100%; height:auto; }
+figure>img {  display:block; margin:0 auto; }
+.figure-aside { display:flex; width:100%; margin:6mm 0; align-items:flex-start; break-inside:auto; }
+.figure-aside figure { display:block; flex:none; width:var(--figure-width,43%); margin:0; padding-right:4mm; }
+.figure-aside .aside-text { display:block; flex:1; min-width:0; padding:0; }
 .figure-aside h3 { margin-top:0; }
-table { border-collapse:collapse; width:100%; margin:3mm 0 4mm; font-size:10pt; line-height:1.55; }
-caption { text-align:left; font-size:9.5pt; color:#45535d; margin-bottom:1.5mm; }
-thead { display:table-header-group; }
-th { background:#edf2f3; text-align:left; border-top:.5pt solid #708792; border-bottom:.5pt solid #708792; }
-th,td { padding:1.5mm 2mm; }
-td { border-bottom:.35pt solid #c7ced3; }
-tr { break-inside:avoid; }
+table {  border-collapse:collapse; width:100%; margin:4mm 0 5mm; font-size:10pt; line-height:1.55; }
+caption {  font-family:"Noto Sans CJK KR",sans-serif; font-size:9.5pt; line-height:1.55; color:#45535d; text-align:left; margin-bottom:1.5mm; }
+thead {  display:table-header-group; }
+th {  font-family:"Noto Sans CJK KR",sans-serif; background:#edf2f3; text-align:left; border-top:.5pt solid #708792; border-bottom:.5pt solid #708792; font-family:"Noto Sans CJK KR",sans-serif; padding:1.6mm 2mm; }
+td {  font-family:"Noto Sans CJK KR",sans-serif; padding:1.6mm 2mm; border-bottom:.35pt solid #c7ced3; }
+tr {  break-inside:avoid; }
 .keep { break-inside:avoid; }
-code,pre { font-family:'Noto Sans Mono CJK KR','Noto Sans Mono','DejaVu Sans Mono',monospace; }
-code { background:#f0f2f4; border-radius:.5mm; padding:0 .6mm; font-size:.95em; }
-pre { background:#1e222a; color:#edf0f5; padding:3.5mm 4mm; margin:2mm 0; white-space:pre-wrap; font-size:10pt; line-height:1.5; border-radius:.7mm; border:none; }
-pre code { color:inherit; background:none; padding:0; font-size:inherit; }
-.code-wrap { break-inside:avoid; margin:3mm 0; }
-.kw { color:#cbb2ff; } .num { color:#e5bf85; } .str { color:#b9d99c; } .com { color:#adb5bf; }
-sup,sub { font-size:.75em; line-height:0; position:static; }
-sup { vertical-align:super; } sub { vertical-align:sub; }
-.math { white-space:nowrap; font-variant-numeric:lining-nums; } /* Legacy only; new math uses data-latex. */
+code {  font-family:"Noto Sans Mono CJK KR","Noto Sans Mono",monospace; background:#eff1f3; padding:0 .6mm; font-size:.95em; }
+pre {  font-family:"Noto Sans Mono CJK KR","Noto Sans Mono",monospace; background:#1e222a; color:#edf0f5; padding:3.5mm 4mm; margin:2mm 0; white-space:pre-wrap; font-size:9.5pt; line-height:1.55; border:none; }
+pre code {  color:inherit; background:none; padding:0; font-size:inherit; }
+.code-wrap {  break-inside:avoid; margin:5mm 0; }
+.kw {  color:#cbb2ff; }
+.num {  color:#e5bf85; }
+.str {  color:#b9d99c; }
+.com {  color:#adb5bf; }
+sup { font-size:.75em; line-height:0; position:static; vertical-align:super; }
+sub { font-size:.75em; line-height:0; position:static; vertical-align:sub; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.math { white-space:nowrap; font-variant-numeric:lining-nums; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .equation { font-size:11pt; line-height:1.9; margin:3mm 0; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .fraction { display:inline-block; vertical-align:middle; text-align:center; line-height:1.2; margin:0 .15em; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .fraction>.top { display:block; border-bottom:.7pt solid currentColor; padding:0 .18em .12em; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .fraction>.bottom { display:block; padding:.12em .18em 0; }
-ol,ul { margin:2mm 0 3mm; padding-left:6mm; }
-li { margin-bottom:1.3mm; }
-.question { margin:5mm 0; break-inside:avoid; }
-.question h3 { border-top:.6pt solid var(--accent); padding-top:2.5mm; }
-.q-link,.back { font-size:9.5pt; font-weight:400; margin-left:3mm; white-space:nowrap; }
-.writing-label { color:#59646b; font-size:9.5pt; margin:2mm 0 0; }
-.guide { height:8mm; border-bottom:.35pt solid #b8c1c7; background:white; }
-.answers { break-before:page; }
-.answer { margin:4mm 0 7mm; }
-.answer-summary { font-size:12pt; font-weight:700; line-height:1.6; }
+ol {  margin:2mm 0 4mm; padding-left:6mm; }
+ul {  margin:2mm 0 4mm; padding-left:6mm; }
+li {  margin-bottom:1.6mm; }
+.question {  margin:6mm 0; break-inside:avoid; }
+.question h3 {  border-top:.6pt solid var(--def); padding-top:2.5mm; margin-top:0; }
+.q-link {  font-size:9.5pt; font-weight:400; margin-left:3mm; white-space:nowrap; }
+.back {  font-size:9.5pt; font-weight:400; margin-left:3mm; white-space:nowrap; }
+.writing-label {  font-family:"Noto Sans CJK KR",sans-serif; color:#59646b; font-size:9.5pt; margin:2mm 0 0; }
+.guide {  height:8mm; border-bottom:.5pt solid #98a3aa; }
+.answers {  break-before:page; }
+.answer {  margin:6mm 0 8mm; }
+.answer-summary { break-after:avoid;  margin:0 0 4mm; padding:1.6mm 3.5mm; background:var(--ans-tint); break-inside:avoid; }
 .solution { border-top:.4pt solid var(--rule); margin-top:3mm; padding-top:2.5mm; }
 .solution h4 { margin:0 0 2mm; }
 .sources { margin-top:6mm; }
 @media screen { body { max-width:190mm; padding:15mm 20mm; margin:0 auto; } }
-
-/* Labels use words as well as color; long solution splits are authored locally. */
 .answer-continuation { break-before:auto; }
 .answer-continuation > h3:first-child { margin-top:0; }
-
-/* Stable reading aids. Topic-specific adjustments belong in local.css. */
-.nowrap,.short-cell { white-space:nowrap; overflow-wrap:normal; }
-.toc a::after { content:leader('.') target-counter(attr(href),page); }
-.toc .toc-sub { font-size:9.5pt; padding-left:4mm; }
+.nowrap {  white-space:nowrap; overflow-wrap:normal; }
+.short-cell {  white-space:nowrap; overflow-wrap:normal; }
+.toc a::after {  content:leader(".") target-counter(attr(href),page); color:var(--soft); }
+.toc .toc-sub {  font-size:9.5pt; padding-left:5mm; color:var(--soft); }
 .chapter { break-before:auto; }
-.chapter > h2 { string-set:chapter-title content(); }
-.running { string-set:document-title content(); }
-@page { @top-left { content:string(document-title); font-family:'Noto Sans CJK KR',sans-serif; font-size:7.5pt; color:var(--soft); } @top-right { content:string(chapter-title); font-family:'Noto Sans CJK KR',sans-serif; font-size:7.5pt; color:var(--soft); } }
-@page:first { @top-left { content:none; } @top-right { content:none; } }
+.chapter > h2 {  string-set:chapter-title content(); }
+.running {  string-set:document-title content(); }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
 .tag-legend { font-size:9pt; line-height:1.6; color:var(--soft); margin-top:4mm; }
 .review-sheet { break-after:page; }
 .review-sheet li { margin-bottom:2mm; }
 .appendix { break-before:page; }
 .appendix h2 { string-set:chapter-title content(); }
 .reference-table { font-size:9pt; line-height:1.4; }
-.reference-table th,.reference-table td { padding:1mm 1.2mm; }
+.reference-table th { padding:1mm 1.2mm; }
+.reference-table td { padding:1mm 1.2mm; }
 .reference-table code { font-size:9pt; background:none; padding:0; }
 .minor-note { font-size:10pt; margin:3mm 0; }
 .table-caption { break-after:avoid; }
-.answer h3,.answer-summary { break-after:avoid; }
-.answer-start,.answer-head,.question-core { break-inside:avoid; }
-.workbook-answer,.answer-group { break-before:auto; }
-
-/* Keep headings with the introductory source line and following explanation. */
+.answer h3 {  break-after:avoid; margin-top:8mm; }
+.answer-start { break-inside:avoid; }
+.answer-head { break-inside:avoid; }
+.question-core { break-inside:avoid; }
+.workbook-answer { break-before:auto; }
+.answer-group { break-before:auto; }
 .chapter > h2 + p.source { break-after:avoid; }
-.answers > h2,.answer-group > h2,.sources > h2,.review-sheet > h2,.workbook-question > h2,.practice-page > h2 { string-set:chapter-title content(); }
-
-.correction-row { break-inside:avoid; }
+.answers > h2 { string-set:chapter-title content(); }
+.answer-group > h2 { string-set:chapter-title content(); }
+.sources > h2 { string-set:chapter-title content(); }
+.review-sheet > h2 { string-set:chapter-title content(); }
+.workbook-question > h2 { string-set:chapter-title content(); }
+.practice-page > h2 { string-set:chapter-title content(); }
 .wide-numeric { font-size:9pt; }
-
-/* Roles, not paragraph cards. Keep legacy classes for old editable packages. */
-.definition,.key-formula { margin:4mm 0; padding:3mm 4mm; background:#f2f5f6; border-left:2pt solid var(--accent); }
-.definition > h3,.key-formula > h3 { margin:0 0 2mm; font-size:11pt; }
-.definition p:last-child,.key-formula p:last-child { margin-bottom:0; }
-.figure-frame { border:.5pt solid #c7ced3; padding:3mm; background:white; }
-.figure-frame figcaption { margin:2mm 0 0; }
-.figure-aside .aside-text { padding:0; }
+.definition {  margin:6mm 0; break-inside:avoid; }
+.key-formula {  margin:6mm 0; break-inside:avoid; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.definition > h3 { margin:0 0 2mm; font-size:11pt; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.key-formula > h3 { margin:0 0 2mm; font-size:11pt; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.definition > p:last-child { margin-bottom:0; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.key-formula > p:last-child { margin-bottom:0; }
+.figure-frame {  border:.5pt solid #c7ced3; padding:3mm; background:white; }
+.figure-frame figcaption {  margin:2mm 0 0; }
 .figure-aside .aside-text + figure { padding-left:4mm; padding-right:0; }
 .figure-aside figure.figure-frame { padding:3mm; }
 .figure-aside figure.figure-frame + .aside-text { padding-left:4mm; }
-.figure-aside.compact { break-inside:avoid; } /* Only genuinely short related units. */
+.figure-aside.compact { break-inside:avoid; }
 figure.narrow { width:var(--figure-width,70%); margin-left:auto; margin-right:auto; }
-.source-line,.table-note { font-size:9.5pt; color:var(--soft); line-height:1.55; margin:1.5mm 0 3mm; }
-.correction-note { border-left:1pt solid #a96c60; padding-left:3mm; margin:3mm 0; }
-blockquote { margin:4mm 0; padding-left:4mm; border-left:1pt solid var(--rule); }
-blockquote p { margin:0 0 2mm; }
-blockquote cite { font-style:normal; font-size:9.5pt; color:var(--soft); }
-tbody th[scope="row"] { background:none; border-top:none; border-bottom:.35pt solid #c7ced3; font-weight:600; }
-.math-inline { white-space:nowrap; }
-.math-display { margin:3mm 0; break-inside:avoid; }
-.math-caption { font-size:9.5pt; color:var(--soft); margin:1mm 0 3mm; }
-.math-visual svg { max-width:none; overflow:visible; }
+.source-line {  font-family:"Noto Sans CJK KR",sans-serif; font-size:9.5pt; color:var(--soft); line-height:1.55; margin:1.5mm 0 4mm; }
+.table-note {  font-family:"Noto Sans CJK KR",sans-serif; font-size:9.5pt; color:var(--soft); line-height:1.55; margin:1.5mm 0 4mm; }
+/* 기존 마크업 호환용. 새 집필에는 사용하지 않는다. */
+.correction-note { margin:4.8mm 0; }
+blockquote {  margin:6mm 10mm; padding:0; }
+blockquote p {  margin:0 0 1.5mm; }
+blockquote cite {  display:block; text-align:right; font-style:normal; font-size:9.5pt; color:var(--soft); }
+tbody th[scope="row"] {  background:none; border-top:none; border-bottom:.35pt solid #c7ced3; font-weight:600; }
+.math-inline {  font-family:"Noto Sans CJK KR",sans-serif; white-space:nowrap; }
+.math-display {  font-family:"Noto Sans CJK KR",sans-serif; margin:5mm 0; break-inside:avoid; }
+.math-caption { font-family:'Noto Sans CJK KR',sans-serif; font-size:9.5pt; color:var(--soft); margin:1mm 0 4mm; }
+.math-visual svg {  max-width:none; overflow:visible; }
 @media screen and (max-width:650px) {
   .figure-aside,.figure-aside figure,.figure-aside .aside-text { display:block; width:auto; padding:0; }
   .figure-aside figure { margin-bottom:3mm; }
   .figure-aside figure.figure-frame + .aside-text { padding-left:0; }
-  .math-display { overflow-x:auto; } /* Print overflow must be solved by authored line breaks. */
+  .math-display { overflow-x:auto; }
 }
+@page {
+  size:A4; margin:22mm 30mm 20mm;
+  @bottom-center { content:counter(page); font-family:"Noto Sans CJK KR",sans-serif; font-size:8.5pt; color:#525a61; }
+}
+.doc-meta {  font-family:"Noto Sans CJK KR",sans-serif; font-size:10pt; color:var(--soft); margin:0 0 9mm; }
+.reading-key {  font-family:"Noto Sans CJK KR",sans-serif; font-size:9.5pt; line-height:1.65; color:var(--soft); margin:0 0 6mm; }
+.h-src {  font-family:"Noto Sans CJK KR",sans-serif; }
+.self-check {  font-family:"Noto Sans CJK KR",sans-serif; margin:0; font-size:9.5pt; color:var(--soft); }
+.q-meta {  font-family:"Noto Sans CJK KR",sans-serif; font-size:9pt; color:var(--soft); margin:0 0 2mm; }
+.chapter-summary > h3 {  font-family:"Noto Sans CJK KR",sans-serif; margin:0 0 3.5mm; padding:1.6mm 4mm; background:var(--sum); color:white; font-size:10.5pt; }
+h2[data-num]::before {  content:attr(data-num); display:inline-block; font-size:28pt; line-height:1; font-weight:700; color:var(--def); margin-right:4mm; vertical-align:baseline; }
+h3 .h-src {  float:right; font-size:8.5pt; font-weight:400; color:var(--soft); margin-top:1.4mm; }
+em {  font-style:normal; background-image:linear-gradient(var(--key-mark),var(--key-mark)); background-repeat:no-repeat; background-size:100% 55%; background-position:0 100%; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+.cover-goals {  margin:0 0 6mm; }
+.cover-goals h2 {  font-size:12pt; margin:0 0 2mm; }
+.cover-goals ul {  margin:0; padding-left:5mm; }
+.cover-goals li {  margin-bottom:1.2mm; }
+.reading-key b {  color:var(--ink); }
+.toc h2 {  font-size:12pt; margin:0 0 2mm; }
+@page { @top-left { content:string(document-title); font-family:"Noto Sans CJK KR",sans-serif; font-size:8pt; color:#525a61; } @top-right { content:string(chapter-title); font-family:"Noto Sans CJK KR",sans-serif; font-size:8pt; color:#525a61; } }
+@page:first { @top-left { content:none; } @top-right { content:none; } }
+.chapter-lead {  font-size:11.5pt; line-height:1.7; color:#2c3a44; margin:0 0 6mm; break-inside:avoid; }
+.def-tab {  display:inline-block; margin:0; padding:1mm 3.5mm; background:var(--def); color:white; font-family:"Noto Sans CJK KR",sans-serif; font-size:9.5pt; font-weight:700; line-height:1.5; }
+.def-body {  background:var(--def-tint); padding:3.4mm 4mm .6mm; }
+.key-formula .math-display {  text-align:center; }
+.lec-wave {  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2217.25%22%20height%3D%223%22%20viewBox%3D%220%200%2017.25%203%22%3E%3Cpath%20d%3D%22M0%202%20Q4.3125%200.5%208.625%202%20T17.25%202%22%20fill%3D%22none%22%20stroke%3D%22%23c62828%22%20stroke-width%3D%220.9%22/%3E%3C/svg%3E"); background-repeat:repeat-x; background-position:0 100%; background-size:13.8pt 2.4pt; padding-bottom:2.9pt; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+.chapter-summary {  margin:12mm 0 6mm; break-inside:avoid; }
+.chapter-summary ul {  list-style:none; margin:0 0 3mm; padding:0; }
+.chapter-summary li {  margin:0 0 2.2mm; padding-left:11mm; text-indent:-11mm; }
+.chapter-summary .ref {  display:inline-block; width:11mm; text-indent:0; font-weight:700; color:var(--sum); font-family:"Noto Sans CJK KR",sans-serif; }
+.fix-f {  margin:0 0 4.8mm; break-inside:avoid; }
+.fix-f h4 {  margin:0 0 1mm; font-size:10pt; color:var(--fix); }
+.fix-f p {  margin:0; }
+.fix-e-call {  font-family:"Noto Sans CJK KR",sans-serif; font-size:6.3pt; font-weight:700; color:var(--fix); vertical-align:super; line-height:0; margin-left:.15mm; text-decoration:none; white-space:nowrap; }
+.fix-e-list {  margin:6mm 0 0; padding-top:2mm; border-top:.4pt solid var(--rule); font-family:"Noto Sans CJK KR",sans-serif; font-size:9pt; break-inside:avoid; }
+.fix-e-list h4 {  margin:0 0 1.5mm; font-size:9pt; color:var(--fix); }
+.fix-e-list p {  margin:0 0 1mm; padding-left:6.5mm; text-indent:-6.5mm; }
+.fix-e-list .mark {  display:inline-block; width:6.5mm; text-indent:0; color:var(--fix); font-weight:700; font-size:8.5pt; text-decoration:none; }
+figure.scaled {  display:block; width:var(--w); max-width:100%; margin:6mm auto; }
+figure.scaled > img {  width:100%; }
+pre.output {  background:#f1f3f4; color:var(--ink); }
+pre.output::before {  content:"출력"; display:block; font-family:"Noto Sans CJK KR",sans-serif; font-size:8.5pt; color:var(--soft); margin-bottom:1mm; }
+.ans-label {  font-family:"Noto Sans CJK KR",sans-serif; font-weight:700; color:var(--ans); margin-right:2.5mm; }
+/* 가로 크롭을 나란히 놓을 때도 각 그림·캡션은 블록으로 묶는다. */
+.fig-row { display:flex; gap:4mm; align-items:flex-start; }
+.fig-row > figure { min-width:0; }

@@ -154,6 +154,9 @@ def build(source, pdfs, output, revision, prefix, status='draft', include=()):
     entries['REBUILD.md'] = (
         'These PDFs are the frozen web handoff, not local review approval.\n'
         'Install rebuild/requirements.txt and MathJax using package-lock.json; fonts are not bundled.\n'
+        'For new v3.4 notes, verify with fc-list: Noto Serif CJK KR, Noto Sans CJK KR, Noto Sans Mono CJK KR.\n'
+        'If any required font is missing, report rendering incomplete; do not silently substitute.\n'
+        'Keep the bundled CSS and renderer/font contract for existing notes.\n'
         'From the extracted root, render a NEW candidate with:\n'
         'python rebuild/render.py notes.html /new/path/notes.pdf\n'
         'python rebuild/render.py workbook.html /new/path/workbook.pdf\n'
