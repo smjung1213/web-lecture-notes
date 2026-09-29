@@ -65,7 +65,7 @@ description: 한 과목·한 주차의 지정 원자료로 설명형 한국어 �
 
 ### 6. 조판·재생성·최초 전달을 마친다
 
-새 노트에는 디자인 기준 v3.4를 쓴다. 기존 노트·편집본은 동봉 CSS를 유지하며 새 CSS로 재조판·재출판하지 않는다. 웹 환경의 `fc-list : family`로 Noto Serif CJK KR·Noto Sans CJK KR·Noto Sans Mono CJK KR을 확인하고, 없으면 조용히 대체하지 않고 조판 단계를 미완료로 보고한다. `assets/layout-sample.html`의 A/B 구조와 합성 `sample-process.svg`·300dpi `sample-slide-crop.png`는 디자인 확인용이다.
+새 노트에는 디자인 기준 v3.4의 후속 개정(0.6.1)을 쓴다. 짧은 정정은 표시가 있는 페이지 하단에 두고 문서 전체에서 연속 번호를 쓴다. 마크업과 렌더 후 배치 검사는 design.md의 각주 계약을 따른다. 기존 노트·편집본은 동봉 CSS를 유지하며 새 CSS로 재조판·재출판하지 않는다. 웹 환경의 `fc-list : family`로 Noto Serif CJK KR·Noto Sans CJK KR·Noto Sans Mono CJK KR을 확인하고, 없으면 조용히 대체하지 않고 조판 단계를 미완료로 보고한다. `assets/layout-sample.html`의 A/B 구조와 합성 `sample-process.svg`·300dpi `sample-slide-crop.png`는 디자인 확인용이다.
 
 design.md의 MathJax 정적 변환과 마크업, CSS·견본을 사용한다. 관리 렌더러와 동봉 package-lock.json을 기본 재생성 경로로 사용한다. 다른 변환 경로를 썼다면 편집 원문 data-latex와 캐시 차이를 기록하고 후단의 관리 렌더러로 정규화·재검증한다. 관리 렌더러는 수식 캐시를 LaTeX에서 재생성한 뒤 PDF를 만든다. `<script>`/CDN만 추가하는 것은 이 렌더러의 지원 경로가 아니다. 사용할 도구가 없거나 변환에 실패하면 LaTeX 작업본과 막힌 단계를 전달하고 raw LaTeX가 보이는 PDF를 완성본으로 표시하지 않는다. 반복 설치 대신 실제 환경과 장애를 기록한다.
 

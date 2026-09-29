@@ -28,7 +28,7 @@ GitHub 플러그인으로 기본 브랜치와 커밋을 확인한 뒤 그 커밋
 
 전달 직전 `references/delivery.md`, `scripts/delivery.py`, `scripts/delivery-requirements.txt`도 읽고 준비된 PDF를 한 번에 포장한다.
 
-새 제작은 디자인 기준 v3.4를 사용한다. 명조 본문, 고딕 제목·안내와 수식 크기 보정, 역할별 탭·물결·미주, 그림 글자 배율을 적용한다. 웹 환경에서 `fc-list : family`로 Noto Serif CJK KR·Noto Sans CJK KR·Noto Sans Mono CJK KR을 확인하고, 없으면 조용히 대체하지 않고 조판 단계를 미완료로 보고한다. 기존 노트·편집본은 동봉 lecture.css를 유지하며 새 CSS로 재조판·재출판하지 않는다.
+새 제작은 디자인 기준 v3.4를 사용한다. 명조 본문, 고딕 제목·안내와 수식 크기 보정, 역할별 탭·물결·페이지 하단 정정(문서 전체 연속 번호), 그림 글자 배율을 적용한다. 웹 환경에서 `fc-list : family`로 Noto Serif CJK KR·Noto Sans CJK KR·Noto Sans Mono CJK KR을 확인하고, 없으면 조용히 대체하지 않고 조판 단계를 미완료로 보고한다. 기존 노트·편집본은 동봉 lecture.css를 유지하며 새 CSS로 재조판·재출판하지 않는다.
 
 관리 렌더러를 사용할 때는 `scripts/render.py`, `css_resources.py`, `typeset.cjs`, `package.json`, `package-lock.json`, `requirements.txt`도 읽는다. Python/WeasyPrint가 HTML 안의 JavaScript를 실행하는 경로가 아니다. 신뢰하는 Node 도우미가 LaTeX를 정적 SVG와 HTML용 MathML로 변환한 뒤 WeasyPrint에 넘긴다. 사용법·실제 검증 범위·검색/복사 및 접근성의 한계는 design.md를 따른다. 설치 설정 `.codex-plugin/plugin.json`, `agents/openai.yaml`은 배포 메타데이터이지 웹 대화의 모델·권한 변경 명령이 아니다. 실제 모델·실행·접근 증거의 검사는 로컬 `lecture-week`의 job/receipt/coverage 계약이 담당하고, 웹 SKILL은 집필 기준과 웹 자체 검사의 소유 위치다. 지침의 모델 이름만으로 실제 실행 성공을 인증하지 않는다.
 

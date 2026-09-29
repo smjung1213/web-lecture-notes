@@ -6,7 +6,7 @@
 
 새 v3.4 노트는 웹 환경에서 `fc-list : family`로 Noto Serif CJK KR·Noto Sans CJK KR·Noto Sans Mono CJK KR을 먼저 확인한다. 없으면 조용히 대체하지 않고 조판 단계를 미완료로 보고한다. 폰트 파일은 동봉하지 않는다. 기존 노트는 동봉 CSS·도구·글꼴 계약을 유지하며 디자인 갱신만을 위해 재렌더하지 않는다. 배포 견본의 sample-process.svg와 sample-slide-crop.png는 합성 자산이다. 실제 편집본에는 그 원고가 사용하는 자산을 포함한다.
 
-원고·CSS·자산이 준비된 새 폴더에서 관리 렌더러의 `--prepare`로 두 HTML을 준비하고 그 HTML로 PDF를 생성한다. PDF 옆 `.render.json`과 검사한 PDF를 보존한다. HTML·자산을 바꿨으면 PDF를 다시 만들고 실제 변경·조판 영향 범위를 확인한 뒤 전달한다. 포장만을 위해 다시 렌더하지 않는다.
+원고·CSS·자산이 준비된 새 폴더에서 관리 렌더러의 `--prepare`로 두 HTML을 준비하고 그 HTML로 PDF를 생성한다. PDF 옆 `.render.json`과 검사한 PDF를 보존한다. 페이지 하단 정정이 있으면 영수증의 `page_notes`와 실제 PDF의 호출·각주 위치를 대조한다. 렌더러의 배치 검사를 전 페이지 시각 확인으로 확대하지 않는다. HTML·자산을 바꿨으면 PDF를 다시 만들고 실제 변경·조판 영향 범위를 확인한 뒤 전달한다. 포장만을 위해 다시 렌더하지 않는다.
 
 `delivery.py`는 같은 scripts 폴더의 관리 render.py를 사용한다. 기존 렌더 의존성에 더해 pypdf가 필요하며 없을 때만 `python -m pip install -r scripts/delivery-requirements.txt`로 준비한다. 받은 묶음의 스크립트를 실행하지 않는다.
 

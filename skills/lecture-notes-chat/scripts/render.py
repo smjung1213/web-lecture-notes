@@ -118,9 +118,99 @@ def check_text(text, source):
     for style in parser.styles:
         for item in css_resources(style):
             inspect(item, source.as_uri())
+    notes = page_notes(text)
     return {'html': str(source), 'resources': len(seen), 'ids': len(parser.ids),
             'internal_links': len(parser.links), 'math_source_count': len(math_nodes(text)),
+            'page_note_count': len(notes),
             'math_cache': 'NOT_CHECKED'}
+
+
+def page_notes(text):
+    """Validate authored page corrections; legacy chapter endnotes are unchanged."""
+    from bs4 import BeautifulSoup, Tag
+    soup = BeautifulSoup(text, 'html.parser')
+    result = []
+    for number, note in enumerate(soup.select('.fix-page-note'), 1):
+        label = f'[{number}]'
+        if (note.name != 'span' or not note.get('id') or
+                note.get('data-note') != str(number) or
+                note.select('.fix-page-note, .math-display, p, div, section, aside')):
+            raise ValueError('PAGE_NOTE_MARKUP: use a non-nested span.fix-page-note '
+                             'with unique id and document-wide data-note=1,2,...')
+        call = note.previous_sibling
+        while isinstance(call, str) and not call.strip():
+            call = call.previous_sibling
+        markers = note.select('a.mark')
+        if (not isinstance(call, Tag) or call.name != 'a' or
+                'fix-e-call' not in call.get('class', []) or not call.get('id') or
+                call.get('href') != '#' + note['id'] or call.get_text() != label or
+                len(markers) != 1 or markers[0].get_text() != label or
+                markers[0].get('href') != '#' + call['id']):
+            raise ValueError('PAGE_NOTE_MARKUP: the adjacent [n] call and note marker '
+                             'must link to each other with matching document-wide numbers')
+        if not isinstance(call.previous_sibling, str) or not call.previous_sibling.endswith('\u2060'):
+            raise ValueError('PAGE_NOTE_MARKUP: put &#8288; immediately before the [n] call')
+        prose = BeautifulSoup(str(note), 'html.parser')
+        for formula in prose.select('[data-latex]'):
+            formula.decompose()  # SVG glyphs are not TextBoxes; inspect them visually.
+        result.append({'number': number, 'note_id': note['id'], 'call_id': call['id'],
+                       'expected_text': re.sub(r'\s+', '', prose.get_text())})
+    return result
+
+
+def check_page_note_layout(document, text):
+    """Reject missing, displaced or overflowing corrections before saving a PDF.
+
+    FootnoteAreaBox is inspected only on the pinned WeasyPrint 70.0 path. This
+    is a layout check, not content approval or a replacement for visual review.
+    It does not patch the installed renderer or migrate existing endnotes.
+    """
+    notes = page_notes(text)
+    if not notes:
+        return []
+    from weasyprint.formatting_structure.boxes import FootnoteAreaBox
+    records = []
+    for note in notes:
+        calls, placed = [], []
+        for page_number, page in enumerate(document.pages, 1):
+            if note['call_id'] in page.anchors:
+                calls.append((page_number, page.anchors[note['call_id']]))
+            page_box = page._page_box
+            for area in page_box.children:
+                if not isinstance(area, FootnoteAreaBox):
+                    continue
+                for box in area.children:
+                    if box.element is not None and box.element.get('id') == note['note_id']:
+                        placed.append((page_number, page_box, box))
+        if (len(calls) != 1 or len(placed) != 1 or calls[0][0] != placed[0][0] or
+                calls[0][1][3] <= calls[0][1][1]):
+            raise RuntimeError(f'PAGE_NOTE_LAYOUT: {note["note_id"]} is missing, split, '
+                               'duplicated or not on its call page; no PDF saved')
+        page_number, page_box, box = placed[0]
+        # The last note's bottom margin collapses outside the area. Its visible
+        # border box, not that empty margin, must fit within the content area.
+        bottom = box.border_box_y() + box.border_height()
+        content_bottom = page_box.content_box_y() + page_box.height
+        descendants = list(box.descendants())
+        visible_text = ''.join(getattr(child, 'text', '') for child in descendants
+                               if child.style['visibility'] == 'visible' and
+                               child.style['opacity'] != 0)
+        if (not note['expected_text'] or
+                re.sub(r'\s+', '', visible_text) != note['expected_text'] or
+                box.style['visibility'] != 'visible' or
+                box.style['opacity'] == 0 or box.height <= 0 or
+                box.position_y <= calls[0][1][1] or bottom > content_bottom + .5 or
+                box.border_box_x() < page_box.content_box_x() - .5 or
+                box.border_box_x() + box.border_width() >
+                page_box.content_box_x() + page_box.width + .5):
+            raise RuntimeError(f'PAGE_NOTE_LAYOUT: {note["note_id"]} is hidden, '
+                               'misplaced or exceeds the page; no PDF saved')
+        records.append({**{k: v for k, v in note.items() if k != 'expected_text'},
+                        'page': page_number, 'same_page': True, 'text_matched': True,
+                        'note_top_css_px': box.position_y,
+                        'note_bottom_css_px': bottom,
+                        'content_bottom_css_px': content_bottom})
+    return records
 
 
 
@@ -351,6 +441,7 @@ def render(source, output, fonts=None):
     logger.addHandler(handler)
     try:
         document = HTML(string=prepared, base_url=source.as_uri(), url_fetcher=fetcher).render()
+        page_note_layout = check_page_note_layout(document, prepared)
         data = document.write_pdf()
     finally:
         logger.removeHandler(handler)
@@ -370,7 +461,8 @@ def render(source, output, fonts=None):
                'renderer_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                'toolchain':identity,
                'weasyprint_version':version('weasyprint'), 'font_families':fonts or DEFAULT_FONTS,
-               'pdf_sha256':hashlib.sha256(data).hexdigest(), 'pages':len(document.pages)}
+               'pdf_sha256':hashlib.sha256(data).hexdigest(), 'pages':len(document.pages),
+               'page_notes':page_note_layout}
     save_new(output, data)
     save_new(receipt_path, (json.dumps(receipt,ensure_ascii=False,indent=2)+'\n').encode('utf-8'))
     print(f'Created {output} ({len(document.pages)} pages). Content and visual review are still required.')

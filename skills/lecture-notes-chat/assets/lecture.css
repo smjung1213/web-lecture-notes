@@ -218,7 +218,17 @@ em {  font-style:normal; background-image:linear-gradient(var(--key-mark),var(--
 .fix-f {  margin:0 0 4.8mm; break-inside:avoid; }
 .fix-f h4 {  margin:0 0 1mm; font-size:10pt; color:var(--fix); }
 .fix-f p {  margin:0; }
-.fix-e-call {  font-family:"Noto Sans CJK KR",sans-serif; font-size:6.3pt; font-weight:700; color:var(--fix); vertical-align:super; line-height:0; margin-left:.15mm; text-decoration:none; white-space:nowrap; }
+/* Positive line-height gives the PDF link a clickable rectangle. */
+.fix-e-call {  font-family:"Noto Sans CJK KR",sans-serif; font-size:6.3pt; font-weight:700; color:var(--fix); vertical-align:super; line-height:1; margin-left:.15mm; text-decoration:none; white-space:nowrap; }
+/* 2026-09-29 후속 개정: 짧은 정정은 호출과 같은 페이지 하단에 둔다.
+   명시한 [n]과 양방향 링크를 쓰고, 번호는 문서 전체에서 연속한다.
+   자동 호출/표시는 숨기되 native footnote-call box와 line 정책은 유지한다. */
+@page { @footnote { border-top:.4pt solid #b8c1c7; margin-top:4mm; padding-top:2mm; } }
+.fix-page-note { float:footnote; footnote-display:block; footnote-policy:line; font-family:'Noto Sans CJK KR',sans-serif; font-size:9pt; line-height:1.55; margin:0 0 1mm; padding-left:6.5mm; text-indent:-6.5mm; break-inside:avoid; }
+.fix-page-note::footnote-call { content:""; font-size:0; line-height:0; }
+.fix-page-note::footnote-marker { content:""; }
+.fix-page-note .mark { display:inline-block; width:6.5mm; text-indent:0; color:var(--fix); font-weight:700; font-size:8.5pt; text-decoration:none; }
+/* 기존 장 끝 미주 호환용. 새 집필은 .fix-page-note를 쓴다. */
 .fix-e-list {  margin:6mm 0 0; padding-top:2mm; border-top:.4pt solid var(--rule); font-family:"Noto Sans CJK KR",sans-serif; font-size:9pt; break-inside:avoid; }
 .fix-e-list h4 {  margin:0 0 1.5mm; font-size:9pt; color:var(--fix); }
 .fix-e-list p {  margin:0 0 1mm; padding-left:6.5mm; text-indent:-6.5mm; }
