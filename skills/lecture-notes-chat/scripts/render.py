@@ -368,14 +368,43 @@ def check_fonts(families):
 
 
 
+REQUIRED_PYTHON_PACKAGES = {'weasyprint': '70.0', 'beautifulsoup4': '4.14.3', 'tinycss2': '1.5.1'}
+
+
+def require_renderer():
+    """Reject metadata or actual imported engine drift before preparing/rendering."""
+    from importlib.metadata import version, PackageNotFoundError
+    versions = {}
+    for name, expected in REQUIRED_PYTHON_PACKAGES.items():
+        try:
+            actual = version(name)
+        except PackageNotFoundError:
+            actual = 'MISSING'
+        if actual != expected:
+            raise RuntimeError(f'RENDERER_VERSION_MISMATCH: {name} requires {expected}, found {actual}; '
+                               'run the managed preflight/offline setup in a new directory; no PDF created')
+        versions[name] = actual
+    # Set the native-library path before the first actual import on macOS.
+    if sys.platform == 'darwin' and Path('/opt/homebrew/lib/libgobject-2.0.dylib').exists():
+        os.environ.setdefault('DYLD_FALLBACK_LIBRARY_PATH', '/opt/homebrew/lib')
+    try:
+        import weasyprint
+    except (ImportError, OSError) as exc:
+        raise RuntimeError('WeasyPrint or its native libraries are unavailable; no PDF created') from exc
+    if weasyprint.__version__ != REQUIRED_PYTHON_PACKAGES['weasyprint']:
+        raise RuntimeError(f'RENDERER_VERSION_MISMATCH: imported WeasyPrint {weasyprint.__version__}; '
+                           'requires 70.0; no PDF created')
+    return versions
+
+
 def renderer_identity(source, fonts=None):
     """Byte identity of executable inputs plus the actual installed dependencies."""
-    from importlib.metadata import version
+    versions = require_renderer()
     scripts = Path(__file__).resolve().parent
     identity = {'files': {name: hashlib.sha256((scripts/name).read_bytes()).hexdigest()
                          for name in ('render.py', 'css_resources.py', 'typeset.cjs',
                                       'requirements.txt', 'package.json', 'package-lock.json')},
-                'python_packages': {name: version(name) for name in ('weasyprint', 'beautifulsoup4', 'tinycss2')},
+                'python_packages': versions,
                 'fonts': check_fonts(fonts or DEFAULT_FONTS)}
     if math_nodes(Path(source).read_text(encoding='utf-8')):
         result = subprocess.run(['node', str(scripts/'typeset.cjs'), '--identity'],

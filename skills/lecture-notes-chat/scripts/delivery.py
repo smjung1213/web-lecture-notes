@@ -153,7 +153,10 @@ def build(source, pdfs, output, revision, prefix, status='draft', include=()):
         documents[role] = {'file': name, 'receipt': receipt_name, **pdf_info(entries[name])}
     entries['REBUILD.md'] = (
         'These PDFs are the frozen web handoff, not local review approval.\n'
-        'Install rebuild/requirements.txt and MathJax using package-lock.json; fonts are not bundled.\n'
+        'Reuse verified WeasyPrint 70.0 / Python and MathJax environments; do not reinstall unnecessarily.\n'
+        'If unavailable, follow the managed references/runtime.md offline attachment path; internet installation is not assumed.\n'
+        'The wheel attachment and system fonts/Node/MathJax are not bundled in this edit ZIP.\n'
+        'Record the Python executable, isolated PYTHONPATH/-B -S and MATHJAX_MODULE_ROOT in production-note.md.\n'
         'For new v3.4 notes, verify with fc-list: Noto Serif CJK KR, Noto Sans CJK KR, Noto Sans Mono CJK KR.\n'
         'If any required font is missing, report rendering incomplete; do not silently substitute.\n'
         'Keep the bundled CSS and renderer/font contract for existing notes.\n'

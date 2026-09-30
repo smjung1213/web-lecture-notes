@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><title>WeasyPrint 70.0 오프라인 조판 시험</title>
+<link rel="stylesheet" href="lecture.css"></head>
+<body>
+<header><h1>오프라인 조판 시험</h1>
+<p class="doc-meta"><span class="running">WeasyPrint 70.0 합성 견본</span> · 실제 강의자료 없음</p></header>
+<p>이 문서는 설치와 조판을 확인하는 합성 입력이다. <strong>본문</strong>은 명조, 제목과 안내는 고딕으로 표시한다. <em>형광의 경계에 회색 선이 없는지 확인한다.</em></p>
+<nav class="toc"><a href="#test-1">수식·그림·물결</a><a href="#test-2">코드·표·페이지 하단 정정</a></nav>
+<section class="chapter" id="test-1"><h2 data-num="1">수식과 그림</h2>
+<p><span class="lec-wave">이 문장은 합성 시험을 위해 수업 강조 모양을 보여 준다. 긴 문장이 두 줄 이상으로 이어져도 빨간 물결이 각 줄의 글자나 다음 줄과 닿지 않는지 확인한다.</span></p>
+<p>문장 속 수식 <span class="math-inline" data-latex="x^2+y^2=1"></span>의 크기와 기준선을 확인한다. 정정 표시는 같은 쪽의 설명으로 연결한다.&#8288;<a class="fix-e-call" href="#fix-1" id="fix-1-call">[1]</a><span class="fix-page-note" id="fix-1" data-note="1"><a class="mark" href="#fix-1-call">[1]</a>정정 검사 문장 하나. 이 문장은 호출 표시와 같은 페이지 하단에 있어야 한다.</span></p>
+<div class="math-display" data-latex="\frac{1}{2}+\frac{1}{3}=\frac{5}{6}"></div>
+<figure class="scaled figure-frame" style="--w:60mm"><img src="sample-slide-crop.png" alt="합성 슬라이드 크롭의 숫자와 도형"><figcaption>합성 크롭 그림. 그림·캡션·숫자의 판독성을 확인한다.</figcaption></figure>
+</section>
+<section class="chapter" id="test-2" style="break-before:page"><h2 data-num="2">페이지 하단 정정</h2>
+<h3>2.1 코드와 출력<span class="h-src">합성 입력</span></h3>
+<p>코드 글꼴은 고정폭 고딕이다. 두 번째 정정은 문서 전체 연속 번호를 유지한다.&#8288;<a class="fix-e-call" href="#fix-2" id="fix-2-call">[2]</a><span class="fix-page-note" id="fix-2" data-note="2"><a class="mark" href="#fix-2-call">[2]</a>정정 검사 문장 둘. 앞 장의 번호에 이어 [2]로 표시하고 같은 쪽 하단에 둔다.</span></p>
+<pre><code>total = 2 + 3
+print(total)</code></pre>
+<pre class="output">5</pre>
+<aside class="definition"><p class="def-tab">정의</p><div class="def-body"><p>이 상자는 합성 정의의 표현을 확인한다. 글꼴과 청록 탭, 직각 모서리를 확인한다.</p></div></aside>
+<table><caption>합성 표</caption><thead><tr><th>항목</th><th>값</th></tr></thead><tbody><tr><td>첫째 값</td><td>2</td></tr><tr><td>둘째 값</td><td>3</td></tr></tbody></table>
+<p class="answer-summary"><span class="ans-label">정답</span> 5</p>
+<p>PDF 생성 성공과 전 페이지 시각 검토는 별도로 기록한다. 각주 표시의 눌림 영역과 양방향 이동은 실제 뷰어에서 추가 확인한다.</p>
+</section></body></html>

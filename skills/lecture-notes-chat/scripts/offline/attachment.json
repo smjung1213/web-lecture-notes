@@ -1,0 +1,7 @@
+{
+  "filename": "weasyprint70-linux-x86_64-cp313-wheels-r01.zip",
+  "sha256": "497860db0a228e6dff7c93e7a04c220150bb1bd3d4d30786b85dbd5bf500f984",
+  "bytes": 17520667,
+  "wheel_count": 17,
+  "contents": "wheels/*.whl only; license files retained inside official wheels"
+}
