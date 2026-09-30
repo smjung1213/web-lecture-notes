@@ -4,7 +4,7 @@
 
 ## 준비와 실행
 
-집필 전 [runtime.md](runtime.md)의 환경 확인·합성 PDF 시험을 수행하고 실제 실행 경로를 production-note.md에 기록한다. 전달도 같은 Python·격리 PYTHONPATH·MathJax 경로를 사용한다. 오프라인 설치 묶음은 Python 의존성용 별도 첨부이며 편집 ZIP이나 GitHub 커넥터가 자동 제공한다고 가정하지 않는다.
+집필 전 [runtime.md](runtime.md)의 환경 확인·합성 PDF 시험을 수행하고 실제 실행 경로를 production-note.md에 기록한다. 전달도 같은 Python·격리 PYTHONPATH·MathJax 경로를 사용한다. 오프라인 설치 묶음은 고정 GitHub Release의 Python 의존성용 ZIP이며 편집 ZIP이나 GitHub 커넥터가 자동 제공한다고 가정하지 않는다. 비공개 Release의 실제 다운로드가 막히면 직접 첨부한 같은 ZIP을 검증한다.
 
 새 v3.4 노트는 웹 환경에서 `fc-list : family`로 Noto Serif CJK KR·Noto Sans CJK KR·Noto Sans Mono CJK KR을 먼저 확인한다. 없으면 조용히 대체하지 않고 조판 단계를 미완료로 보고한다. 폰트 파일은 동봉하지 않는다. 기존 노트는 동봉 CSS·도구·글꼴 계약을 유지하며 디자인 갱신만을 위해 재렌더하지 않는다. 배포 견본의 sample-process.svg와 sample-slide-crop.png는 합성 자산이다. 실제 편집본에는 그 원고가 사용하는 자산을 포함한다.
 

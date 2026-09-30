@@ -132,7 +132,9 @@ def already_available():
     return True
 
 
-def run(output, wheels=None, mathjax_root=None):
+def run(output, wheels=None, mathjax_root=None, archive=None):
+    if wheels is not None and archive is not None:
+        raise ValueError('Choose either --wheels or --archive')
     output = Path(output).absolute()
     if (os.path.lexists(output) or output.resolve().is_relative_to(ROOT.parent) or
             (wheels is not None and output.resolve().is_relative_to(Path(wheels).resolve()))):
@@ -162,8 +164,13 @@ def run(output, wheels=None, mathjax_root=None):
         else:
             summary['mode'] = 'ISOLATED_OFFLINE_INSTALL'
             summary['actual_target'] = check_target(lock['target'])
+            if archive is not None:
+                from fetch_runtime import fetch_bundle
+                summary['stage'] = 'verify-release-archive'
+                wheels = fetch_bundle(output / 'bundle', archive)
             if wheels is None:
-                raise ValueError('WHEELS_REQUIRED: attach/extract the managed wheel ZIP; no network fallback')
+                raise ValueError('WHEELS_REQUIRED: download the pinned GitHub Release ZIP with an '
+                                 'authorized tool and pass --archive, or attach it; no PyPI fallback')
             wheels = Path(wheels).resolve()
             wheel_hashes = verify_wheels(wheels)
             site = output / 'site-packages'
@@ -206,7 +213,9 @@ def run(output, wheels=None, mathjax_root=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--wheels', type=Path, help='Extracted directory of the 17 official wheels')
+    inputs = parser.add_mutually_exclusive_group()
+    inputs.add_argument('--wheels', type=Path, help='Extracted directory of the 17 official wheels')
+    inputs.add_argument('--archive', type=Path, help='Pinned Release ZIP; verify and extract only if installation is needed')
     parser.add_argument('--verify-only', action='store_true')
     parser.add_argument('--output', type=Path)
     parser.add_argument('--mathjax-root', type=Path, help='Existing mathjax-full 3.2.1; no Node installation')
@@ -218,7 +227,7 @@ def main():
         return 0
     if args.output is None:
         parser.error('--output is required')
-    result = run(args.output, args.wheels, args.mathjax_root)
+    result = run(args.output, args.wheels, args.mathjax_root, args.archive)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result['status'] == 'AUTOMATED_CHECKS_PASSED_VISUAL_REVIEW_REQUIRED' else 1
 
