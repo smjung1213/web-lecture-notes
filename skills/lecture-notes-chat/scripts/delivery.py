@@ -154,6 +154,7 @@ def build(source, pdfs, output, revision, prefix, status='draft', include=()):
     entries['REBUILD.md'] = (
         'These PDFs are the frozen web handoff, not local review approval.\n'
         'Reuse verified WeasyPrint 70.0 / Python and MathJax environments; do not reinstall unnecessarily.\n'
+        'A receipt with renderer_mode "draft" came from the preinstalled WeasyPrint 68.0; re-render with 70.0 for an official PDF.\n'
         'If unavailable, follow the managed references/runtime.md offline attachment path; internet installation is not assumed.\n'
         'The wheel attachment and system fonts/Node/MathJax are not bundled in this edit ZIP.\n'
         'Record the Python executable, isolated PYTHONPATH/-B -S and MATHJAX_MODULE_ROOT in production-note.md.\n'

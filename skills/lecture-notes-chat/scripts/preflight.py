@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Observe this environment and render the managed two-page synthetic input. No install."""
+"""Observe this environment and render the managed two-page synthetic input. No install.
+
+--draft-renderer accepts the preinstalled WeasyPrint 68.0 for a web draft; official PDFs use 70.0.
+"""
 import argparse
 import hashlib
 import importlib
@@ -60,6 +63,45 @@ def check_isolation(site):
     return modules
 
 
+def sample_png(target):
+    """Copy the managed PNG if its bytes are a real image; otherwise draw the same synthetic crop.
+
+    A text-only repository connector cannot deliver the binary, and the image is only a
+    synthetic readability probe, so a drawn copy is recorded as 'generated'.
+    """
+    from PIL import Image
+    source = ROOT.parent / 'assets' / 'sample-slide-crop.png'
+    try:
+        with Image.open(source) as image:
+            image.verify()
+        shutil.copyfile(source, target)
+        return 'repository'
+    except Exception:
+        draw_sample_png(target)
+        return 'generated'
+
+
+def draw_sample_png(target):
+    from PIL import Image, ImageDraw, ImageFont
+
+    def font(style, size):
+        path = subprocess.check_output(['fc-match', '-f', '%{file}', f'Noto Sans CJK KR:{style}'],
+                                       text=True, timeout=30).strip()
+        return ImageFont.truetype(path, size)
+
+    image = Image.new('RGB', (1500, 660), 'white')
+    draw = ImageDraw.Draw(image)
+    draw.text((40, 30), '처리율 = 처리량 ÷ 시간', font=font('bold', 96), fill='#1f1f1f')
+    for x, label, value in ((40, '측정 A', '12 ÷ 3 = 4'), (900, '측정 B', '20 ÷ 5 = 4')):
+        draw.rounded_rectangle((x, 185, x + 560, 490), radius=16, fill='#dcebf7', outline='#333333', width=4)
+        draw.text((x + 45, 210), label, font=font('regular', 80), fill='#1f1f1f')
+        draw.text((x + 45, 345), value, font=font('regular', 96), fill='#c00000')
+    draw.line((640, 338, 860, 338), fill='#333333', width=12)
+    draw.polygon([(860, 305), (900, 338), (860, 371)], fill='#333333')
+    draw.text((40, 545), '단위: 개/분 · 준비 단계(2분)는 비교에서 제외', font=font('regular', 64), fill='#333333')
+    image.save(target, dpi=(300, 300))
+
+
 def check_note_links(page, number):
     """PDF rectangles may list either corner first; require both note directions."""
     targets = set()
@@ -74,20 +116,22 @@ def check_note_links(page, number):
         raise RuntimeError('PDF_LINK_AREA_MISSING')
 
 
-def run(output, site=None):
+def run(output, site=None, draft=False):
     output = Path(output).absolute()
     if os.path.lexists(output) or output.resolve().is_relative_to(ROOT.parent):
         raise ValueError('Choose a NEW output directory outside the managed skill')
     output.mkdir(parents=True, exist_ok=False)
     result = {'status': 'INCOMPLETE', 'visual_review': 'NOT_PERFORMED',
-              'viewer_click_search_copy': 'NOT_PERFORMED', 'pdf_accessibility': 'NOT_VERIFIED'}
+              'viewer_click_search_copy': 'NOT_PERFORMED', 'pdf_accessibility': 'NOT_VERIFIED',
+              'renderer_mode': 'draft' if draft else 'official'}
     try:
         result['environment'] = environment()
         import render
-        result['required_versions'] = render.require_renderer()
+        result['required_versions'] = render.require_renderer(draft=True) if draft else render.require_renderer()
         if site is not None:
             result['isolated_modules'] = check_isolation(site)
-        if md.version('pypdf') != '6.17.0':
+        result['pypdf'] = md.version('pypdf')
+        if not draft and result['pypdf'] != '6.17.0':
             raise RuntimeError('PREFLIGHT_DEPENDENCY_MISMATCH: pypdf requires 6.17.0')
         mathjax = json.loads(subprocess.check_output(
             ['node', str(ROOT / 'typeset.cjs'), '--identity'], text=True, timeout=120))
@@ -97,8 +141,9 @@ def run(output, site=None):
         result['fonts'] = render.check_fonts(render.DEFAULT_FONTS)
         working = output / 'sample'
         working.mkdir()
-        for name in ('preflight.html', 'lecture.css', 'sample-slide-crop.png'):
+        for name in ('preflight.html', 'lecture.css'):
             shutil.copyfile(ROOT.parent / 'assets' / name, working / name)
+        result['sample_png'] = sample_png(working / 'sample-slide-crop.png')
         result['source_sha256'] = {p.name: sha(p) for p in working.iterdir()}
         prepared = working / 'prepared.html'
         render.prepare(working / 'preflight.html', prepared)
@@ -106,7 +151,7 @@ def run(output, site=None):
         if result['ready'].get('math_cache') != 'REGENERATED_AND_MATCHED':
             raise RuntimeError('MATH_CACHE_MISMATCH')
         pdf = output / 'synthetic.pdf'
-        render.render(prepared, pdf)
+        render.render(prepared, pdf, draft=True) if draft else render.render(prepared, pdf)
         receipt = json.loads(pdf.with_name(pdf.name + '.render.json').read_text())
         from pypdf import PdfReader
         reader = PdfReader(pdf)
@@ -134,8 +179,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--site', type=Path, help='Verify isolation; use only with Python -B -S and PYTHONPATH')
+    parser.add_argument('--draft-renderer', action='store_true',
+                        help='Web draft only: accept the preinstalled WeasyPrint 68.0 (see render.py)')
     args = parser.parse_args()
-    result = run(args.output, args.site)
+    if args.site and args.draft_renderer:
+        parser.error('--site checks the isolated 70.0 runtime; do not combine it with --draft-renderer')
+    result = run(args.output, args.site, args.draft_renderer)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result['status'] == 'AUTOMATED_CHECKS_PASSED_VISUAL_REVIEW_REQUIRED' else 1
 

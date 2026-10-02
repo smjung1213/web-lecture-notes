@@ -1,20 +1,31 @@
 # 집필 전 조판 환경 확인
 
-본격 집필에 들어가기 전에 현재 실행 환경과 작은 합성 PDF를 확인한다. 환경 검사가 막혀도 원자료 확보·범위 계약·inventory 등 독립 작업은 계속한다. 다만 조판 미확인을 숨긴 채 첫 PDF 완성을 약속하거나 68.0으로 자동 전환하지 않는다. 이미 검증한 같은 환경·도구·CSS·글꼴을 그대로 쓰면 결과 경로·해시를 production-note.md에 연결해 재사용한다. 환경이나 해당 입력이 바뀌면 새 경로에서 다시 시험한다.
+본격 집필에 들어가기 전에 현재 실행 환경과 작은 합성 PDF를 확인한다. 환경 검사가 막혀도 원자료 확보·범위 계약·inventory 등 독립 작업은 계속한다. 다만 조판 미확인을 숨긴 채 첫 PDF 완성을 약속하지 않는다. 이미 검증한 같은 환경·도구·CSS·글꼴을 그대로 쓰면 결과 경로·해시를 production-note.md에 연결해 재사용한다. 환경이나 해당 입력이 바뀌면 새 경로에서 다시 시험한다.
+
+## 렌더러 선택
+
+공식 PDF의 렌더러는 WeasyPrint 70.0이다. 로컬 lecture-week가 최종본을 70.0으로 다시 렌더하고 저장하므로, 웹 PDF는 첫 전달용이다. 웹은 실제로 관측한 버전으로 다음 순서에 따라 고른다.
+
+1. 현재 환경이 70.0이면 그대로 쓴다(공식 모드).
+2. 미리 설치된 68.0이면 설치하지 않고 초안 렌더러로 쓴다. preflight.py·render.py에 `--draft-renderer`를 붙인다. 영수증에 `renderer_mode: draft`가 남는다. 68.0은 70.0보다 수식(SVG)이 작게 나오고 줄바꿈이 조금 달라질 수 있다. 쪽별 판독은 실제로 만든 초안 PDF로 하고, 최종 배치는 로컬 70.0 렌더에서 다시 확인한다.
+3. 둘 다 아니면 아래 오프라인 설치로 70.0을 준비한다.
+
+그 밖의 버전으로 자동 전환하지 않는다. 고른 렌더러·모드와 이유를 production-note.md에 적는다.
 
 ## 현재 환경을 먼저 사용
 
-같은 고정 Git 커밋의 scripts와 assets를 실제 파일로 확보한다. GitHub 문서 읽기 성공은 스크립트·PNG·wheel·ZIP의 바이트 전달 성공을 보장하지 않는다. preflight에 필요한 sample-slide-crop.png 같은 바이너리 자산을 실제 바이트로 받지 못하면 그 파일만 직접 첨부를 요청한다. 빠진 wheel ZIP은 아래 고정 Google Drive 파일을 연결된 Drive 도구로 실제 내려받는 경로를 사용하고, 막힌 경우에만 직접 첨부를 요청한다. 현재 Python 실행 파일·플랫폼·아키텍처·Python/WeasyPrint 버전·glibc, Noto Serif CJK KR·Noto Sans CJK KR·Noto Sans Mono CJK KR, Node 18+·MathJax 3.2.1의 실제 상태를 확인한다. 폰트·Node/MathJax·Pango/Fontconfig는 아래 Python wheel 묶음에 없으며 자동 설치하지 않는다. MathJax가 이미 다른 위치에 있으면 실제 확인한 디렉터리만 MATHJAX_MODULE_ROOT로 지정한다.
+같은 고정 Git 커밋의 scripts와 assets를 실제 파일로 확보한다. GitHub 문서 읽기 성공은 스크립트·PNG·wheel·ZIP의 바이트 전달 성공을 보장하지 않는다. preflight의 합성 그림 sample-slide-crop.png를 실제 이미지 바이트로 받지 못하면 preflight가 같은 구성의 합성 그림을 직접 그리고 결과에 `sample_png: generated`로 남긴다. 이 그림 때문에 첨부를 요청하지 않는다. Drive나 대화에 남은 이전 버전의 소스 ZIP·스크립트를 지침·도구로 쓰지 않는다. wheel ZIP은 위 3번에서만 필요하다. 아래 고정 Google Drive 파일을 연결된 Drive 도구로 실제 내려받고, 막힌 경우에만 직접 첨부를 요청한다. 현재 Python 실행 파일·플랫폼·아키텍처·Python/WeasyPrint 버전·glibc, Noto Serif CJK KR·Noto Sans CJK KR·Noto Sans Mono CJK KR, Node 18+·MathJax 3.2.1의 실제 상태를 확인한다. 폰트·Node/MathJax·Pango/Fontconfig는 아래 Python wheel 묶음에 없으며 자동 설치하지 않는다. MathJax가 이미 다른 위치에 있으면 실제 확인한 디렉터리만 MATHJAX_MODULE_ROOT로 지정한다.
 
 ```sh
 # python은 이번 작업에서 관측한 동일 실행 파일의 절대 경로로 바꾼다.
 python -B scripts/preflight.py --output /새/조판시험
+# 기본 환경이 68.0이면(초안 모드): python -B scripts/preflight.py --output /새/조판시험 --draft-renderer
 # 필요할 때만: MATHJAX_MODULE_ROOT=/실제/node_modules/mathjax-full
 ```
 
-preflight.py는 설치하지 않는다. 실제 70.0 import, 필수 Python 버전, 네이티브 라이브러리·글꼴·MathJax, 캐시 재생성 비교를 검사하고 assets/preflight.html과 관리 CSS·그림을 새 폴더에 복사하여 synthetic.pdf 2쪽을 만든다. 두 페이지에는 수식·두 줄 물결·그림·표·코드와 페이지 하단 정정 두 개가 있다. PDF 본문의 정정 문장·호출과 같은 쪽·배치·링크 영역도 구조적으로 검사한다. 실패는 preflight-result.json의 INCOMPLETE와 오류로 남으며 기존 출력 경로를 덮어쓰지 않는다. require_renderer는 메타데이터와 실제 WeasyPrint import를 검사하고 요구 버전 불일치를 PDF 생성 전에 차단한다.
+preflight.py는 설치하지 않는다. 실제 WeasyPrint import(공식 70.0, 초안 모드는 68.0도), 필수 Python 버전, 네이티브 라이브러리·글꼴·MathJax, 캐시 재생성 비교를 검사하고 assets/preflight.html과 관리 CSS·그림을 새 폴더에 복사하여 synthetic.pdf 2쪽을 만든다. 두 페이지에는 수식·두 줄 물결·그림·표·코드와 페이지 하단 정정 두 개가 있다. PDF 본문의 정정 문장·호출과 같은 쪽·배치·링크 영역도 구조적으로 검사한다. 실패는 preflight-result.json의 INCOMPLETE와 오류로 남으며 기존 출력 경로를 덮어쓰지 않는다. require_renderer는 메타데이터와 실제 WeasyPrint import를 검사하고 요구 버전 불일치를 PDF 생성 전에 차단한다.
 
-자동 검사 통과 후 **새 PDF 두 페이지를 각각 판독**해 한글·수식·물결 간격·그림/캡션·표/코드·각주·잘림/겹침을 확인한다. preflight-result.json의 NOT_PERFORMED는 자동 도구가 시각 판독을 하지 않았다는 뜻이다. production-note.md에 결과 해시, 실제 판독 페이지와 판정·미확인을 별도로 남긴다. 기존 증거 파일의 플래그를 고쳐 완료로 만들지 않는다. 성공 후 같은 Python 실행 경로와 환경 변수로 실제 원고를 렌더한다. 합성 시험은 강의 내용 검토나 최종 PDF 전 페이지 검토를 대신하지 않는다.
+자동 검사 통과 후 **새 PDF 두 페이지를 각각 판독**해 한글·수식·물결 간격·그림/캡션·표/코드·각주·잘림/겹침을 확인한다. preflight-result.json의 NOT_PERFORMED는 자동 도구가 시각 판독을 하지 않았다는 뜻이다. production-note.md에 결과 해시, 실제 판독 페이지와 판정·미확인을 별도로 남긴다. 기존 증거 파일의 플래그를 고쳐 완료로 만들지 않는다. 성공 후 같은 Python 실행 경로와 환경 변수, 같은 모드(초안이면 `--draft-renderer`)로 실제 원고를 렌더한다. 합성 시험은 강의 내용 검토나 최종 PDF 전 페이지 검토를 대신하지 않는다.
 
 ## 필요한 경우의 오프라인 설치
 
@@ -63,5 +74,7 @@ PYTHONPATH=/새/격리환경/site-packages /실제/python -B -S scripts/delivery
 2026-09-30 별도 새 대화의 0.6.3 시험에서 첨부 없는 GitHub 단계는 Release를 내려받지 못해(URL 사전 조회 조건 오류, 브라우저 열기 비활성, github.com 이름 해석 실패, GitHub 커넥터는 메타데이터만 제공) 설치·PDF 없이 미완료였다. HTTP 401/403/404는 관측되지 않았다. 같은 대화의 Drive 단계에서는 파일 ID로 소스 ZIP·wheel ZIP·manifest를 실제로 받아 해시가 일치했고, 17개 wheel 격리 설치, 2쪽 PDF 3개 생성·판독, 관리 전달 ZIP 포장, 부정 검사 11개 통과를 웹이 보고했다. 요청문에 없던 manifest의 SHA-256(`982d5ecb…be64d`, 820바이트)이 로컬 원본과 일치해 Drive 바이트 확보는 로컬에서 따로 확인됐다. 증거 ZIP·PDF는 Chat 다운로드 실패로 로컬 검증하지 못했다. 한 세션의 결과를 모든 세션·계정의 성공 보장으로 확대하지 않는다.
 
 첫 웹 증거는 승격 전 설치 경로·동일 wheel과 합성 입력을, Drive 단계는 0.6.3 관리 도구의 웹 실행을 보고한다. 0.6.5의 준비 HTML 고정점 수정은 로컬에서만 검증했다. 로컬 검증과 웹 보고를 구분한다. 실제 Chat PDF 뷰어의 클릭·검색/복사·접근성 시험은 미완료다. 0.6.3 시험의 컨테이너 Chromium은 root 실행 제한으로 시작하지 못했으며 이를 Chat 뷰어의 제한으로 보지 않는다. 구조 검사와 실제 뷰어 검사를 구분하며 별도 우회 작업을 요구하지 않는다.
+
+2026-10-02 로컬(macOS)에서 보관된 68.0 사본으로 관리 렌더러를 시험했다. 고치기 전에는 위의 data URI 거부로 실패했고, render.py가 file/data 스킴을 직접 검사하도록 바꾼 뒤에는 견본 9쪽, preflight 2쪽, 4주차 노트 49쪽·연습문제 30쪽이 70.0과 같은 쪽수와 같은 페이지 하단 정정 배치로 만들어졌다. 차이는 수식 SVG가 작게 나오는 것과 일부 줄바꿈(노트 1쪽)이었다. 웹 Linux의 68.0 초안 모드는 이 시험 뒤에 처음 쓰며, 그 결과는 별도로 확인한다.
 
 물결 간격의 기존 v3.4 기준은 Poppler 300dpi, 빨강 R>130·R>1.5G·G<130·B<130, 어두운 글자 max(RGB)<120으로 검출한 픽셀 행 중심 간 거리다. 이번 웹 PDF를 같은 방식으로 재측정한 위 간격은 0.4233/0.3387mm, 주기는 13.7994/13.8001pt로 기존 검사를 통과했다. 웹 보고서의 600dpi 빈 픽셀 수 기준 0.25–0.30mm와 직접 비교하지 않는다. 해상도·색 임계값·거리 정의를 함께 기록하며 연속적인 실제 경계 간격을 확정하거나 이 차이만으로 CSS를 바꾸지 않는다.

@@ -1,7 +1,7 @@
 """Validate bundled HTML resources and render a new PDF. No model or network calls."""
 from pathlib import Path
 from html.parser import HTMLParser
-from urllib.parse import urlparse, unquote, urljoin
+from urllib.parse import urlparse, urlsplit, unquote, urljoin
 import argparse
 import logging
 import os
@@ -161,7 +161,7 @@ def page_notes(text):
 def check_page_note_layout(document, text):
     """Reject missing, displaced or overflowing corrections before saving a PDF.
 
-    FootnoteAreaBox is inspected only on the pinned WeasyPrint 70.0 path. This
+    FootnoteAreaBox is inspected on WeasyPrint 70.0, or 68.0 in draft mode. This
     is a layout check, not content approval or a replacement for visual review.
     It does not patch the installed renderer or migrate existing endnotes.
     """
@@ -385,20 +385,31 @@ def check_fonts(families):
 
 
 REQUIRED_PYTHON_PACKAGES = {'weasyprint': '70.0', 'beautifulsoup4': '4.14.3', 'tinycss2': '1.5.1'}
+# A web draft may use the platform's preinstalled WeasyPrint 68.0. Its math SVG is
+# smaller and lines may wrap differently, so official PDFs are re-rendered with 70.0.
+DRAFT_WEASYPRINT = ('68.0',)
 
 
-def require_renderer():
-    """Reject metadata or actual imported engine drift before preparing/rendering."""
+def require_renderer(draft=False):
+    """Reject metadata or actual imported engine drift before preparing/rendering.
+
+    draft=True (web draft only) also accepts WeasyPrint 68.0 and the installed
+    BeautifulSoup/tinycss2, and records them; it never makes a publishable PDF.
+    """
     from importlib.metadata import version, PackageNotFoundError
+    allowed = {REQUIRED_PYTHON_PACKAGES['weasyprint'], *(DRAFT_WEASYPRINT if draft else ())}
     versions = {}
     for name, expected in REQUIRED_PYTHON_PACKAGES.items():
         try:
             actual = version(name)
         except PackageNotFoundError:
             actual = 'MISSING'
-        if actual != expected:
+        accepted = actual in allowed if name == 'weasyprint' else (actual == expected or (draft and actual != 'MISSING'))
+        if not accepted:
+            hint = ('; a web draft may use --draft-renderer' if name == 'weasyprint' and actual in DRAFT_WEASYPRINT
+                    else '')
             raise RuntimeError(f'RENDERER_VERSION_MISMATCH: {name} requires {expected}, found {actual}; '
-                               'run the managed preflight/offline setup in a new directory; no PDF created')
+                               f'run the managed preflight/offline setup in a new directory{hint}; no PDF created')
         versions[name] = actual
     # Set the native-library path before the first actual import on macOS.
     if sys.platform == 'darwin' and Path('/opt/homebrew/lib/libgobject-2.0.dylib').exists():
@@ -407,21 +418,23 @@ def require_renderer():
         import weasyprint
     except (ImportError, OSError) as exc:
         raise RuntimeError('WeasyPrint or its native libraries are unavailable; no PDF created') from exc
-    if weasyprint.__version__ != REQUIRED_PYTHON_PACKAGES['weasyprint']:
+    if weasyprint.__version__ not in allowed or weasyprint.__version__ != versions['weasyprint']:
         raise RuntimeError(f'RENDERER_VERSION_MISMATCH: imported WeasyPrint {weasyprint.__version__}; '
-                           'requires 70.0; no PDF created')
+                           f'requires {" or ".join(sorted(allowed))}; no PDF created')
     return versions
 
 
-def renderer_identity(source, fonts=None):
+def renderer_identity(source, fonts=None, draft=False):
     """Byte identity of executable inputs plus the actual installed dependencies."""
-    versions = require_renderer()
+    versions = require_renderer(draft=True) if draft else require_renderer()
     scripts = Path(__file__).resolve().parent
     identity = {'files': {name: hashlib.sha256((scripts/name).read_bytes()).hexdigest()
                          for name in ('render.py', 'css_resources.py', 'typeset.cjs',
                                       'requirements.txt', 'package.json', 'package-lock.json')},
                 'python_packages': versions,
                 'fonts': check_fonts(fonts or DEFAULT_FONTS)}
+    if draft:
+        identity['renderer_mode'] = 'draft'
     if math_nodes(Path(source).read_text(encoding='utf-8')):
         result = subprocess.run(['node', str(scripts/'typeset.cjs'), '--identity'],
                                 capture_output=True, text=True, check=True, timeout=120)
@@ -446,7 +459,7 @@ def save_new(output, data):
         os.unlink(temporary)
 
 
-def render(source, output, fonts=None):
+def render(source, output, fonts=None, draft=False):
     source, output = Path(source).resolve(), Path(output).absolute()
     if output.suffix.lower() != '.pdf':
         raise ValueError('Output must have a .pdf extension')
@@ -454,7 +467,7 @@ def render(source, output, fonts=None):
     if os.path.lexists(output) or os.path.lexists(receipt_path):
         raise FileExistsError(f'Choose a new output file and receipt: {output}')
     source_sha = hashlib.sha256(source.read_bytes()).hexdigest()
-    identity = renderer_identity(source, fonts)
+    identity = renderer_identity(source, fonts, draft)
     prepared = prepare_html(source)
     # Homebrew's shared libraries are not on macOS's default loader path.
     if sys.platform == 'darwin' and Path('/opt/homebrew/lib/libgobject-2.0.dylib').exists():
@@ -475,6 +488,9 @@ def render(source, output, fonts=None):
     class LocalFetcher(URLFetcher):
         def fetch(self, url, headers=None):
             try:
+                # Checked here: WeasyPrint 68.0 splits the scheme on '://' and rejects data: URIs.
+                if urlsplit(url).scheme.lower() not in ('file', 'data'):
+                    raise ValueError(f'URI uses disallowed protocol: {url}')
                 local = local_resource(url, source.parent)
                 if local is not None:
                     resources[str(local.relative_to(source.parent))] = hashlib.sha256(local.read_bytes()).hexdigest()
@@ -482,7 +498,7 @@ def render(source, output, fonts=None):
             except Exception as exc:
                 failed.append(str(exc))
                 raise
-    fetcher = LocalFetcher(allowed_protocols={'file', 'data'}, allow_redirects=False)
+    fetcher = LocalFetcher(allow_redirects=False)
     logger.addHandler(handler)
     try:
         document = HTML(string=prepared, base_url=source.as_uri(), url_fetcher=fetcher).render()
@@ -497,7 +513,7 @@ def render(source, output, fonts=None):
     if hashlib.sha256(source.read_bytes()).hexdigest() != source_sha or any(
             hashlib.sha256((source.parent/name).read_bytes()).hexdigest() != h for name,h in resources.items()):
         raise RuntimeError('RENDER_INPUT_CHANGED: no PDF saved')
-    if renderer_identity(source, fonts) != identity:
+    if renderer_identity(source, fonts, draft) != identity:
         raise RuntimeError('RENDER_TOOLCHAIN_CHANGED: no PDF saved')
     from importlib.metadata import version
     receipt = {'render_receipt_version':1, 'source_name':source.name, 'source_sha256':source_sha,
@@ -508,9 +524,12 @@ def render(source, output, fonts=None):
                'weasyprint_version':version('weasyprint'), 'font_families':fonts or DEFAULT_FONTS,
                'pdf_sha256':hashlib.sha256(data).hexdigest(), 'pages':len(document.pages),
                'page_notes':page_note_layout}
+    if draft:
+        receipt['renderer_mode'] = 'draft'
     save_new(output, data)
     save_new(receipt_path, (json.dumps(receipt,ensure_ascii=False,indent=2)+'\n').encode('utf-8'))
-    print(f'Created {output} ({len(document.pages)} pages). Content and visual review are still required.')
+    print(f'Created {output} ({len(document.pages)} pages{", draft renderer" if draft else ""}). '
+          'Content and visual review are still required.')
 
 
 def main():
@@ -521,6 +540,8 @@ def main():
     parser.add_argument('--prepare', action='store_true', help='Write new static HTML, not PDF')
     parser.add_argument('--ready', action='store_true', help='With --check, regenerate and compare math caches')
     parser.add_argument('--font', action='append', help='Required installed font family; default Noto Serif CJK KR + Noto Sans CJK KR + Noto Sans Mono CJK KR')
+    parser.add_argument('--draft-renderer', action='store_true',
+                        help='Web draft only: also accept the preinstalled WeasyPrint 68.0; official PDFs are re-rendered with 70.0')
     args = parser.parse_args()
     try:
         if args.prepare and args.check:
@@ -532,7 +553,7 @@ def main():
         elif args.prepare and args.output:
             prepare(args.source, args.output)
         elif args.output:
-            render(args.source, args.output, args.font)
+            render(args.source, args.output, args.font, args.draft_renderer)
         else:
             parser.error('output is required unless --check is given')
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as exc:
