@@ -213,8 +213,9 @@ em {  font-style:normal; background-image:linear-gradient(var(--key-mark),var(--
 .lec-wave {  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2217.25%22%20height%3D%223%22%20viewBox%3D%220%200%2017.25%203%22%3E%3Cpath%20d%3D%22M0%202%20Q4.3125%200.5%208.625%202%20T17.25%202%22%20fill%3D%22none%22%20stroke%3D%22%23c62828%22%20stroke-width%3D%220.9%22/%3E%3C/svg%3E"); background-repeat:repeat-x; background-position:0 100%; background-size:13.8pt 2.4pt; padding-bottom:2.9pt; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
 .chapter-summary {  margin:12mm 0 6mm; break-inside:avoid; }
 .chapter-summary ul {  list-style:none; margin:0 0 3mm; padding:0; }
-.chapter-summary li {  margin:0 0 2.2mm; padding-left:11mm; text-indent:-11mm; }
-.chapter-summary .ref {  display:inline-block; width:11mm; text-indent:0; font-weight:700; color:var(--sum); font-family:"Noto Sans CJK KR",sans-serif; }
+.chapter-summary li {  margin:0 0 2.2mm; padding-left:17mm; text-indent:-17mm; }
+/* 번호 칸은 1.1–1.2 같은 범위 표기가 한 줄에 들어가는 폭이다. */
+.chapter-summary .ref {  display:inline-block; width:17mm; white-space:nowrap; text-indent:0; font-weight:700; color:var(--sum); font-family:"Noto Sans CJK KR",sans-serif; }
 .fix-f {  margin:0 0 4.8mm; break-inside:avoid; }
 .fix-f h4 {  margin:0 0 1mm; font-size:10pt; color:var(--fix); }
 .fix-f p {  margin:0; }

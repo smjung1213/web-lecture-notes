@@ -5,7 +5,9 @@
   verify OUTPUT.zip                  reopen a checkpoint and check every file against its manifest
   restore OUTPUT.zip NEW_DIR         verify, then extract into a new folder (no overwrite, no path escape)
 
-A checkpoint only helps if its link reaches the user, so an answer that makes one ends there.
+Web authoring uploads each new checkpoint to the build folder in Google Drive and keeps going.
+If the working folder disappears, download the last checkpoint by file ID, check its SHA-256 and restore it
+into a new folder (see SKILL.md).
 """
 import argparse
 from datetime import datetime, timezone
