@@ -4,8 +4,11 @@
   "bytes": 17520667,
   "wheel_count": 17,
   "contents": "wheels/*.whl only; license files retained inside official wheels",
+  "web_source": "google_drive_file_id",
+  "drive_file_id": "1Jdrsbfcy-pUU_uO_t_MdNRJOCERE_XUg",
+  "drive_access": "connected_google_drive_account_required",
   "release_tag": "weasyprint70-wheels-r01",
   "release_url": "https://github.com/smjung1213/web-lecture-notes/releases/tag/weasyprint70-wheels-r01",
   "download_url": "https://github.com/smjung1213/web-lecture-notes/releases/download/weasyprint70-wheels-r01/weasyprint70-linux-x86_64-cp313-wheels-r01.zip",
-  "access": "private_repository_read_access_required"
+  "access": "private_repository_read_access_required; not reachable from web Chat runtime (2026-09-30)"
 }

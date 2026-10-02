@@ -324,9 +324,25 @@ def prepare_html(source):
     if not soup.head:
         raise ValueError('Prepared HTML requires a head element')
     soup.head.append(style)
+    normalize_doctype_gap(soup)
     prepared = str(soup)
     check_text(prepared, source)
     return prepared
+
+
+def normalize_doctype_gap(soup):
+    """Keep preparation a fixed point: html.parser otherwise adds a newline after
+    the doctype on each pass, so render receipts would not match --prepare output."""
+    from bs4 import Doctype, NavigableString
+    first = soup.contents[0] if soup.contents else None
+    if not isinstance(first, Doctype):
+        return
+    node = first.next_sibling
+    while type(node) is NavigableString and not node.strip():
+        following = node.next_sibling
+        node.extract()
+        node = following
+    first.insert_after('\n')
 
 
 MATH_STYLE = """
