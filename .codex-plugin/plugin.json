@@ -1,6 +1,6 @@
 {
   "name": "web-lecture-notes",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "의미 보존과 역할 기반 표현, MathJax 정적 조판을 연결하는 설명형 강의노트 제작 기준.",
   "author": {
     "name": "Personal lecture workflow"
