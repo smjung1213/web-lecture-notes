@@ -168,12 +168,11 @@ PDF의 수식은 SVG 경로로 그려지므로 수식 텍스트가 일반 텍스
 
 수정 뒤 바뀐 페이지·이웃·재조판 영향 범위를 재확인한다. 웹 초안 PDF에서는 이 기준 가운데 표시 결함만 고치고, 배치 다듬기는 production-note의 ‘로컬 배치 확인’ 목록으로 넘긴다(SKILL.md ‘조판·재생성·최초 전달’). 처음 보지 않은 페이지를 ‘변경 없음’으로 완료하지 않으며, 페이지 수/본문 텍스트가 같다고 배치도 같다고 하지 않는다. 영향 범위를 확정할 수 없으면 전체를 다시 확인한다. 형식·폰트·렌더러 변경 시 가능하면 다른 PDF 렌더러나 실제 사용자 뷰어로 대표 페이지를 추가 확인하고, 못한 검사는 명시한다. 기존 production-note/review에 PDF 버전·실제 판독 페이지·미확인 범위를 남긴다. 생성을 시각 검토, 접근성 인증, 의미상 완료로 확대하지 않는다.
 
-
 관리 `mathjax-3.2.1-svg-base-ams-v2`는 MathJax 3.2.1의 array 선·프레임과 생성된 dashed/dotted 클래스, custom stroke-thickness/dasharray를 독립 SVG 속성으로 보존한다. TeX 입력 패키지는 base+AMS 그대로이며 `\hdashline` 같은 추가 패키지 명령을 지원한다고 뜻하지 않는다. v1 캐시는 `MATH_RENDERER_CHANGED` 안내에 따라 원본을 보존하고 새 사본에서 prepare·PDF 재생성·시각 확인한다.
 
 ### 렌더 입력과 전달본 연결
 
-기본 필수 글꼴은 본문 `Noto Serif CJK KR`, 제목·안내 `Noto Sans CJK KR`, 코드 `Noto Sans Mono CJK KR`이다. 웹 환경에서 `fc-list : family`로 세 글꼴을 확인하며 하나라도 없으면 조용히 대체하지 않고 조판 단계를 미완료로 보고한다. 다른 글꼴을 쓰면 CSS와 모든 필수 `--font`를 함께 지정한다. PDF 옆 `.render.json`은 준비 HTML, 실제 읽은 자산, render/css_resources/typeset와 의존성 명세의 해시, 설치된 Python 패키지 버전, MathJax js 트리 해시·Node 버전, 실제 글꼴 파일 해시를 기록한다. 도구의 파일 경로는 환경마다 달라질 수 있으므로 비교에는 바이트·버전을 사용한다. 렌더 전후 정체성이 달라지면 중단한다.
+글꼴과 확인 방법은 ‘기본과 시각 위계’에 있다. 다른 글꼴을 쓰면 CSS와 모든 필수 `--font`를 함께 지정한다. PDF 옆 `.render.json`은 준비 HTML, 실제 읽은 자산, render/css_resources/typeset와 의존성 명세의 해시, 설치된 Python 패키지 버전, MathJax js 트리 해시·Node 버전, 실제 글꼴 파일 해시를 기록한다. 도구의 파일 경로는 환경마다 달라질 수 있으므로 비교에는 바이트·버전을 사용한다. 렌더 전후 정체성이 달라지면 중단한다.
 
 웹 편집 ZIP은 PDF를 만든 동일 도구의 여섯 파일(render.py, css_resources.py, typeset.cjs, requirements.txt, package.json, package-lock.json)을 `rebuild/`에 넣는다. 두 HTML은 `--prepare`한 사본으로 넣고, 그 SHA-256이 해당 PDF 영수증의 prepared_sha256과 같은지 확인한다. 영수증 두 개와 재생성 명령은 제작 메모에서 역할별로 연결해 전달한다. 원고·자산·도구를 바꾸면 새 PDF와 영수증을 만든다. 로컬 검토 인계에서 이 연결을 다시 검사한다. 감사 기록 재검증과 PDF 재생성은 별도 작업이다.
 
@@ -183,9 +182,7 @@ WeasyPrint 70.0 전환 시 과거 68.x의 PDF·영수증·재생성 도구는 �
 
 ## 집필 전 환경과 합성 PDF
 
-본격 집필 전 [runtime.md](runtime.md)의 preflight.py로 실제 실행 환경·버전·글꼴·MathJax와 합성 PDF 두 쪽을 확인한다. 70.0 환경이 이미 검증됐으면 재설치하지 않는다. 기본 환경이 68.0이면 설치 없이 초안 모드로 쓴다(runtime.md ‘렌더러 선택’). 설치가 필요하면 명시된 Linux x86_64 / CPython 3.13 wheel 첨부와 새 격리 폴더를 사용하고 실제 관측 조건을 기록한다. Python wheel에 시스템 글꼴·Pango·Node·MathJax까지 포함됐다고 가정하지 않는다. 관리 렌더러는 요구 Python 패키지 버전과 실제 WeasyPrint import가 다르면 PDF 생성 전에 중단한다.
-
-물결 간격 수치는 해상도·색 임계값·거리 정의가 같은 경우에만 비교한다. 기존 300dpi 픽셀 중심 간 거리와 웹 600dpi 빈 픽셀 수는 다른 측정이다. 현재 웹 PDF의 같은 300dpi 재측정은 기존 기준을 통과했으며 이 차이로 CSS를 바꾸지 않는다. 구체적인 관측값과 웹 뷰어 미검증은 runtime.md에 있다. 합성 시험 통과는 실제 원고의 최종 PDF 판독을 대체하지 않는다.
+집필 전 환경·합성 PDF 확인, 렌더러 선택과 물결 간격 측정 기준은 [runtime.md](runtime.md)가 정한다. 합성 시험 통과는 실제 원고의 최종 PDF 판독을 대체하지 않는다.
 
 ## WeasyPrint 70.0에서 확인한 표현 제약
 
