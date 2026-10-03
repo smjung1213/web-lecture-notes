@@ -7,7 +7,7 @@
   --key-mark:#fde48c;
   --sum:#3b4852;
   --ans:#2c7a4b;  --ans-tint:#e8f3eb;
-  --fix:#b3261e;
+  --fix:#b3261e;  --fix-tint:#fbeeec;
 
   --mint:#e5f2ed; --mint-ink:#315e4e; --lav:#efebf8; --lav-ink:#615078; --pink:#fdf3f1; --pink-rule:#eac3bd; --yellow:#fdf5e3; }
 * {  box-sizing:border-box; }
@@ -216,9 +216,11 @@ em {  font-style:normal; background-image:linear-gradient(var(--key-mark),var(--
 .chapter-summary li {  margin:0 0 2.2mm; padding-left:17mm; text-indent:-17mm; }
 /* 번호 칸은 1.1–1.2 같은 범위 표기가 한 줄에 들어가는 폭이다. */
 .chapter-summary .ref {  display:inline-block; width:17mm; white-space:nowrap; text-indent:0; font-weight:700; color:var(--sum); font-family:"Noto Sans CJK KR",sans-serif; }
-.fix-f {  margin:0 0 4.8mm; break-inside:avoid; }
+/* 긴 정정: 소제목과 문단을 위아래 빨간 가로선과 옅은 바탕의 한 블록으로 묶는다. */
+.fix-f {  margin:0 0 4.8mm; padding:2.2mm 4mm 2.6mm; background:var(--fix-tint); border-top:1pt solid var(--fix); border-bottom:.6pt solid var(--fix); break-inside:avoid; }
 .fix-f h4 {  margin:0 0 1mm; font-size:10pt; color:var(--fix); }
-.fix-f p {  margin:0; }
+.fix-f p {  margin:0 0 2mm; }
+.fix-f p:last-child {  margin-bottom:0; }
 /* Positive line-height gives the PDF link a clickable rectangle. */
 .fix-e-call {  font-family:"Noto Sans CJK KR",sans-serif; font-size:6.3pt; font-weight:700; color:var(--fix); vertical-align:super; line-height:1; margin-left:.15mm; text-decoration:none; white-space:nowrap; }
 /* 2026-09-29 후속 개정: 짧은 정정은 호출과 같은 페이지 하단에 둔다.
