@@ -1,39 +1,29 @@
-# 웹 중간 산출물의 전달 세트
+# 웹 편집본의 전달 세트
 
-이 절차는 웹에서 로컬 검토로 넘기는 PDF·편집본의 대응을 확인한다. 내용 검토·전 페이지 판독·공식 저장의 승인이 아니다. 초안도 같은 방식으로 묶으며 사용자에게 PDF만 보여 주는 임시 미리보기는 ‘편집본 대응 미확인 미리보기’로 구별한다.
+이 절차는 웹에서 로컬 검토로 넘기는 편집본 ZIP 하나를 만든다. 웹은 PDF를 만들지 않는다. 로컬 lecture-week가 이 ZIP의 HTML을 WeasyPrint 70.0으로 처음 렌더해 기준 PDF로 쓴다. 전달 세트는 내용 검토·PDF 판독·공식 저장의 승인이 아니다.
 
-## 준비와 실행
+## 실행
 
-전달도 [runtime.md](runtime.md)에서 확인한 같은 Python과 실행 환경 변수(격리 PYTHONPATH·MathJax·글꼴 설정)를 사용한다. 폰트 파일은 동봉하지 않는다. 배포 견본의 sample-process.svg와 sample-slide-crop.png는 합성 자산이며, 실제 편집본에는 그 원고가 사용하는 자산을 포함한다.
-
-원고·CSS·자산이 준비된 새 폴더에서 관리 렌더러의 `--prepare`로 두 HTML을 준비하고 그 HTML로 PDF를 생성한다. PDF 옆 `.render.json`과 검사한 PDF를 보존한다. 페이지 하단 정정이 있으면 영수증의 `page_notes`와 실제 PDF의 호출·각주 위치를 대조한다. 렌더러의 배치 검사를 전 페이지 시각 확인으로 확대하지 않는다. HTML·자산을 바꿨으면 PDF를 다시 만들고 실제 변경·조판 영향 범위를 확인한 뒤 전달한다. 포장만을 위해 다시 렌더하지 않는다.
-
-웹 제작에서는 S6에서 전달 세트를 만든다(SKILL.md ‘응답 하나로 끝까지 하고 단계마다 Drive에 저장한다’). 재개용 체크포인트(`checkpoint.py`)는 전달 세트가 아니다. `delivery.py`는 같은 scripts 폴더의 관리 render.py를 사용한다. 기존 렌더 의존성에 더해 pypdf가 필요하다. 공식 모드는 6.17.0을 쓰고, 68.0 초안 모드는 설치된 pypdf를 쓰고 버전을 기록한다. 이미 준비돼 있으면 재설치하지 않으며 오프라인 17개 wheel에도 포함돼 있다. 부족하면 runtime.md의 격리 경로를 따른다. 인터넷이 실제 가능한 별도 환경에서만 delivery-requirements.txt를 사용한 온라인 설치를 고려하며 성공을 전제하지 않는다. 받은 묶음의 스크립트를 실행하지 않는다.
+웹 제작에서는 S5에서 전달 세트를 만든다(SKILL.md ‘응답 하나로 끝까지 하고 단계마다 Drive에 저장한다’). 재개용 체크포인트(`checkpoint.py`)는 전달 세트가 아니다. `delivery.py`는 Python 표준 라이브러리만 쓰며 같은 scripts 폴더의 `render.py`·`css_resources.py`에서 HTML 검사 부분만 가져온다. WeasyPrint·BeautifulSoup·pypdf·MathJax는 필요 없다. 받은 묶음의 스크립트를 실행하지 않는다.
 
 ```sh
-python scripts/delivery.py /작업/준비원고 /전달/handoff-03 \
-  --notes-pdf '/검토한/수치해석 4주차 학습노트.pdf' \
-  --workbook-pdf '/검토한/수치해석 4주차 연습문제.pdf' \
-  --revision 'W4-handoff-03' --file-prefix '수치해석 4주차' --status draft
+python scripts/delivery.py /작업/원고 /전달/handoff-01 \
+  --revision 'W4-handoff-01' --file-prefix '수치해석 4주차' --status draft
 ```
 
 출력 폴더는 새 경로이며 원고 폴더 밖에 둔다. `draft`는 내용 검토 미완료, `web-reviewed`는 웹 자체 검토 수행 상태다. 후자는 작성자가 실제 수행한 경우에만 선택하며 자동 내용 인증이나 로컬 검토 통과를 뜻하지 않는다.
 
-입력은 `notes.html`, `workbook.html`, `lecture.css`, `input-contract.json`, `source-inventory.md`, `coverage.md`, `production-note.md`다. 선택 `local.css`, 자산 `assets/`, 실습 `practice/`, qa-summary/resume-note 및 자산·계산 기록을 함께 넣는다. 실제 PDF를 만든 여섯 렌더 파일은 원고의 `rebuild/` 또는 현재 관리 scripts에서 확보하며 영수증의 해시와 맞아야 한다. 본문에서 참조하는 추가 실습 파일 등이 표준 위치 밖에 있으면 `--include practice_week4.py`처럼 원고 폴더 안 상대 파일을 명시하고 실제 동봉을 확인한다. 추가 파일은 실행하지 않고 바이트 그대로 포함한다. 준비 HTML이 영수증의 prepared_sha256과 다르면 먼저 올바른 준비본을 확보한다. 일치를 위해 영수증을 손으로 바꾸지 않는다.
+입력은 `notes.html`, `workbook.html`, `lecture.css`, `input-contract.json`, `source-inventory.md`, `coverage.md`, `production-note.md`다. 선택 `local.css`, 자산 `assets/`, 실습 `practice/`, qa-summary/resume-note 및 자산·계산 기록을 함께 넣는다. 본문에서 참조하는 추가 실습 파일 등이 표준 위치 밖에 있으면 `--include practice_week4.py`처럼 원고 폴더 안 상대 파일을 명시한다. 추가 파일은 실행하지 않고 바이트 그대로 포함한다. PDF는 받지 않으며 `assets/`나 `--include`에 PDF가 있으면 멈춘다.
 
 ## 도구가 확인하는 것
 
-- 실제 PDF의 해시·크기·쪽수와 렌더 영수증의 대응.
-- 준비 HTML·실제 읽은 CSS/그림·여섯 렌더 파일과 영수증의 해시 대응.
-- 포장된 정적 HTML의 자산·내부 링크·마크업과 로컬 경계.
-- 새 ZIP을 다시 읽었을 때 모든 포장 파일의 해시 및 PDF/원고 연결.
+- 두 HTML의 중복 ID, 문서 내부 링크, `<script>` 같은 능동 요소, 참조한 CSS·그림(CSS 안의 참조 포함)이 원고 폴더 안에 실제로 있는지. 결과의 `html_checks`에 자산 수와 `data-latex` 수식 수가 남는다.
+- 새 ZIP을 다시 읽었을 때 모든 파일의 해시가 `delivery-manifest.json`(handoff_version 2)과 같은지.
 
-도구는 기존 PDF를 복사할 뿐 재생성하지 않는다. ZIP에는 `pdfs/`의 두 PDF와 영수증, 편집 자료와 재생성 도구가 있고, 별도 다운로드 PDF도 같은 바이트다. `delivery-manifest.json`은 실제 포장 바이트에서 생성하고, ZIP 밖 `delivery.json`에는 다운로드 파일들의 해시를 기록한다. 기존 입력 manifest는 덮어쓰지 않는다. 출력 REBUILD.md는 실제 동봉한 여섯 렌더 파일의 직접 실행 명령으로 생성하며, 원고 폴더의 과거 REBUILD.md는 변경하지 않는다. 과거 후보 PDF·이전 manifest·원시 로그·판독용 페이지 이미지는 현재 세트에 섞지 않는다.
+페이지 하단 정정의 배치, 수식 변환, 글꼴, 실제 쪽은 로컬 렌더에서 확인한다. 이 도구의 통과를 그 확인으로 쓰지 않는다. ZIP 밖 `delivery.json`에는 ZIP의 SHA-256·크기와 HTML 검사 결과를 기록한다. 기존 입력 manifest는 덮어쓰지 않는다. 과거 PDF·원시 로그·판독용 이미지는 세트에 섞지 않는다.
 
-## 링크를 제공하는 시점
+## 올리기와 보고
 
-성공한 새 전달 폴더 안의 두 PDF와 편집 ZIP만 같은 답변에서 링크한다. 이 링크는 보기용이다. Drive에는 편집본 ZIP 하나만 올리고, 전달 완료 판정과 최종 보고는 SKILL.md ‘전달과 후속 검토’를 따른다. 안내에는 전달 번호, 학습노트/문제집 쪽수, 내용 검토 상태를 한 줄로 표시한다. 이전 메시지의 개별 파일 링크를 재사용하지 않는다. 수정 후에는 새 전달 번호·폴더로 세 파일을 함께 다시 제공한다. 파일명은 과목·주차 규칙을 유지한다.
+성공한 새 전달 폴더의 편집본 ZIP만 Drive 이번 제작 폴더에 새 파일로 올린다. 전달 완료 판정과 최종 보고는 SKILL.md ‘전달과 후속 검토’를 따른다. 안내에는 전달 번호와 내용 검토 상태를 한 줄로 표시한다. 수정 후에는 새 전달 번호·폴더로 다시 만든다. 파일명은 과목·주차 규칙을 유지한다.
 
 포장 이후 파일을 수정했다면 그 전달은 무효이며 새 폴더로 다시 만든다. 내용이 바뀌지 않은 포장 재검사 때문에 전체 내용 검토를 반복하지 않는다. 파일 일치는 원고의 정확성·설명 충분성·시각 가독성을 승인하지 않는다.
-
-다른 경로·환경의 재생성본은 그림 URL 기반 식별자나 글꼴 등에 따라 해시가 달라질 수 있다. 받았던 파일끼리의 바이트 비교와 새 렌더의 내용·픽셀 비교를 구별한다. 정상 전달 파일의 해시를 맞추려고 PDF나 영수증을 변조하지 않는다.

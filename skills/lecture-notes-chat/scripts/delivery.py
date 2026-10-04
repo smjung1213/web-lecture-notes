@@ -1,17 +1,26 @@
-"""Freeze an already rendered web handoff. Never render, execute package code or publish."""
+"""Freeze the web edit handoff: HTML, CSS, assets and records in one ZIP.
+
+Standard library only. The web creates no PDF: local lecture-week renders the
+handoff with WeasyPrint 70.0 first. Never render, execute package code or publish.
+Legacy handoff_version 1 packages (with PDFs) are still inspected for local review."""
+from html.parser import HTMLParser
 from pathlib import Path, PurePosixPath
 import argparse
 import hashlib
 import io
 import json
 import os
+import re
 import shutil
 import stat
+import sys
 import tempfile
 import unicodedata
 import zipfile
 
 ROLES = ('notes', 'workbook')
+HANDOFF_VERSION = 2
+# Legacy v1 packages carried the renderer that made their PDFs.
 RENDER_FILES = ('render.py', 'css_resources.py', 'typeset.cjs', 'requirements.txt',
                 'package.json', 'package-lock.json')
 REQUIRED = ('notes.html', 'workbook.html', 'lecture.css', 'input-contract.json',
@@ -71,8 +80,8 @@ def load_archive(path):
     return entries
 
 
-def validate(entries):
-    """Check captured bytes, not the installed renderer/font environment."""
+def validate_v1(entries):
+    """Legacy (<=0.6.x) handoff with PDFs: check captured bytes, not the installed environment."""
     m = json.loads(entries['delivery-manifest.json'])
     if m.get('handoff_version') != 1 or set(m['documents']) != set(ROLES):
         raise ValueError('HANDOFF_MANIFEST_INVALID')
@@ -106,7 +115,106 @@ def validate(entries):
     return m
 
 
-def build(source, pdfs, output, revision, prefix, status='draft', include=()):
+def validate(entries):
+    """Current handoff: exact file set and bytes, both manuscripts, no PDF."""
+    m = json.loads(entries['delivery-manifest.json'])
+    if m.get('handoff_version') == 1:
+        return validate_v1(entries)
+    if m.get('handoff_version') != HANDOFF_VERSION or set(m.get('manuscripts', {})) != set(ROLES):
+        raise ValueError('HANDOFF_MANIFEST_INVALID')
+    expected = m['files']
+    if set(expected) != set(entries) - {'delivery-manifest.json'}:
+        raise ValueError('PACKAGE_FILE_SET_CHANGED')
+    for name, h in expected.items():
+        safe_name(name)
+        if name.lower().endswith('.pdf'):
+            raise ValueError(f'PDF_NOT_PART_OF_WEB_HANDOFF: {name}')
+        if digest(entries[name]) != h:
+            raise ValueError(f'PACKAGE_BYTES_CHANGED: {name}')
+    for role in ROLES:
+        if m['manuscripts'][role] != {'file': role + '.html', 'sha256': expected.get(role + '.html')}:
+            raise ValueError(f'MANUSCRIPT_RECORD_CHANGED: {role}')
+    return m
+
+
+class Manuscript(HTMLParser):
+    """Counts editable math sources; the stdlib parser keeps the web free of bs4."""
+    def __init__(self):
+        super().__init__()
+        self.math = 0
+
+    def handle_starttag(self, tag, attrs):
+        if any(k == 'data-latex' for k, _ in attrs):
+            self.math += 1
+
+
+CSS_COMMENT = re.compile(r'/\*.*?\*/', re.S)
+CSS_URL = re.compile(r"""url\(\s*(?:"([^"]*)"|'([^']*)'|([^)'"\s]+))\s*\)""", re.I)
+CSS_IMPORT = re.compile(r"""@import\s+(?:"([^"]*)"|'([^']*)')""", re.I)
+
+
+def css_references(text):
+    """url() and @import targets. Uses the managed tinycss2 parser when installed;
+    the web runtime may lack it, so a standard-library scan is the fallback."""
+    try:
+        import tinycss2  # noqa: F401
+    except ImportError:
+        text = CSS_COMMENT.sub(' ', text)
+        found = [next(g for g in m.groups() if g is not None) for m in CSS_URL.finditer(text)]
+        found += [next(g for g in m.groups() if g is not None) for m in CSS_IMPORT.finditer(text)]
+        return found, 'stdlib'
+    from css_resources import css_resources
+    return list(css_resources(text)), 'tinycss2'
+
+
+def html_check(path):
+    """Same local boundary as render.check_text, without bs4, tinycss2 or the renderer.
+
+    Ids, internal links, active elements and every referenced CSS/image (also
+    inside CSS) must be bundled. Page-note markup and math conversion are
+    checked by the local WeasyPrint 70.0 render."""
+    from urllib.parse import urljoin
+    here = str(Path(__file__).resolve().parent)
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    import render
+    path = Path(path).resolve()
+    text = path.read_text(encoding='utf-8')
+    parser = render.References()
+    parser.feed(text)
+    for target in parser.links:
+        if target and target not in parser.ids:
+            parser.errors.append(f'Missing internal link target: #{target}')
+    if parser.errors:
+        raise ValueError(f'HTML_CHECK_FAILED: {path.name}: ' + '; '.join(parser.errors))
+    seen, parsers = set(), set()
+    def references(css):
+        found, used = css_references(css)
+        parsers.add(used)
+        return found
+    def inspect(resource, base):
+        p = render.local_resource(urljoin(base, resource), path.parent)
+        if p is None or p in seen:
+            return
+        seen.add(p)
+        if p.suffix.lower() == '.css':
+            for item in references(p.read_text(encoding='utf-8')):
+                inspect(item, p.as_uri())
+    try:
+        for item in parser.resources:
+            inspect(item, path.as_uri())
+        for style in parser.styles:
+            for item in references(style):
+                inspect(item, path.as_uri())
+    except (ValueError, FileNotFoundError) as e:
+        raise ValueError(f'HTML_CHECK_FAILED: {path.name}: {e}') from e
+    math = Manuscript()
+    math.feed(text)
+    return {'resources': len(seen), 'ids': len(parser.ids), 'internal_links': len(parser.links),
+            'math_sources': math.math, 'css_parser': '+'.join(sorted(parsers)) or 'none'}
+
+
+def build(source, output, revision, prefix, status='draft', include=()):
     source, output = Path(source).resolve(), Path(output).absolute()
     if not revision.strip() or status not in ('draft', 'web-reviewed'):
         raise ValueError('HANDOFF_LABEL_REQUIRED')
@@ -130,64 +238,39 @@ def build(source, pdfs, output, revision, prefix, status='draft', include=()):
                     raise ValueError('SYMLINK_RESOURCE')
                 if p.is_file():
                     name = safe_name(p.relative_to(source).as_posix())
-                    if any(x in p.parts for x in ('__pycache__', 'node_modules', '.git', 'private')):
+                    if any(x in p.relative_to(source).parts for x in ('__pycache__', 'node_modules', '.git', 'private')):
                         raise ValueError('UNSUPPORTED_RESOURCE_DIRECTORY')
+                    if p.suffix.lower() == '.pdf':
+                        raise ValueError(f'PDF_NOT_PART_OF_WEB_HANDOFF: {name}')
                     entries[name] = read_regular(p)
     for name in include:
         safe_name(name)
         p = source / name
-        if not p.resolve().is_relative_to(source) or p.suffix.lower() == '.pdf' or name in entries or name.startswith('rebuild/') or name in ('delivery-manifest.json', 'REBUILD.md'):
+        if (not p.resolve().is_relative_to(source) or p.suffix.lower() == '.pdf' or name in entries
+                or name == 'delivery-manifest.json'):
             raise ValueError('EXTRA_FILE_CONFLICT_OR_BOUNDARY')
         entries[name] = read_regular(p)
-    # Use the actual renderer shipped with the source, or the managed six files.
-    for name in RENDER_FILES:
-        p = source / 'rebuild' / name
-        entries['rebuild/' + name] = read_regular(p if p.exists() else Path(__file__).with_name(name))
-    documents = {}
-    for role, label in zip(ROLES, ('학습노트', '연습문제')):
-        pdf_path = Path(pdfs[role])
-        name = f'pdfs/{prefix} {label}.pdf'
-        entries[name] = read_regular(pdf_path)
-        receipt_name = name + '.render.json'
-        entries[receipt_name] = read_regular(pdf_path.with_name(pdf_path.name + '.render.json'))
-        documents[role] = {'file': name, 'receipt': receipt_name, **pdf_info(entries[name])}
-    entries['REBUILD.md'] = (
-        'These PDFs are the frozen web handoff, not local review approval.\n'
-        'Reuse verified WeasyPrint 70.0 / Python and MathJax environments; do not reinstall unnecessarily.\n'
-        'A receipt with renderer_mode "draft" came from the preinstalled WeasyPrint 68.0; re-render with 70.0 for an official PDF.\n'
-        'If unavailable, follow the managed references/runtime.md offline attachment path; internet installation is not assumed.\n'
-        'The wheel attachment and system fonts/Node/MathJax are not bundled in this edit ZIP.\n'
-        'Record the Python executable, isolated PYTHONPATH/-B -S and MATHJAX_MODULE_ROOT in production-note.md.\n'
-        'For new v3.4 notes, verify with fc-list: Noto Serif CJK KR, Noto Sans CJK KR, Noto Sans Mono CJK KR.\n'
-        'If any required font is missing, report rendering incomplete; do not silently substitute.\n'
-        'Keep the bundled CSS and renderer/font contract for existing notes.\n'
-        'From the extracted root, render a NEW candidate with:\n'
-        'python rebuild/render.py notes.html /new/path/notes.pdf\n'
-        'python rebuild/render.py workbook.html /new/path/workbook.pdf\n'
-        'A new render may have a different hash. Keep the received PDFs unchanged.\n').encode()
     if sum(map(len, entries.values())) > MAX_BYTES:
         raise ValueError('PACKAGE_TOO_LARGE')
-    for name in entries:
-        safe_name(name)
     if len({n.casefold() for n in entries}) != len(entries):
         raise ValueError('DUPLICATE_PACKAGE_PATH')
-    manifest = {'handoff_version': 1, 'revision': revision, 'status': status,
-                'semantic_review_complete': False, 'documents': documents,
-                'files': {n: digest(b) for n, b in entries.items()}}
+    files = {n: digest(b) for n, b in entries.items()}
+    manifest = {'handoff_version': HANDOFF_VERSION, 'revision': revision, 'status': status,
+                'semantic_review_complete': False, 'pdf': 'none; local lecture-week renders with WeasyPrint 70.0',
+                'manuscripts': {role: {'file': role + '.html', 'sha256': files[role + '.html']} for role in ROLES},
+                'files': files}
     entries['delivery-manifest.json'] = json_bytes(manifest)
     validate(entries)
-    # Validate the exact frozen HTML/resources in an isolated staging directory.
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='.handoff-', dir=output.parent) as tmp:
+        # Check the exact frozen HTML/resources in an isolated staging directory.
         stage = Path(tmp) / 'package'
         stage.mkdir()
         for name, data in entries.items():
             p = stage / name
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_bytes(data)
-        from render import check
-        for role in ROLES:
-            check(stage / f'{role}.html')
+        checks = {role: html_check(stage / f'{role}.html') for role in ROLES}
         ready = Path(tmp) / 'delivery'
         ready.mkdir()
         archive = ready / f'{prefix} 편집본.zip'
@@ -195,29 +278,29 @@ def build(source, pdfs, output, revision, prefix, status='draft', include=()):
             for name, data in entries.items():
                 z.writestr(name, data)
         validate(load_archive(archive))
-        for row in documents.values():
-            (ready / Path(row['file']).name).write_bytes(entries[row['file']])
-        receipt = {'revision': revision, 'status': status, 'documents': documents,
-                   'zip': {'file': archive.name, 'sha256': digest(archive.read_bytes())},
-                   'downloads': {p.name: digest(p.read_bytes()) for p in ready.iterdir()}}
+        data = archive.read_bytes()
+        receipt = {'revision': revision, 'status': status, 'handoff_version': HANDOFF_VERSION,
+                   'zip': {'file': archive.name, 'sha256': digest(data), 'bytes': len(data)},
+                   'html_checks': checks, 'files': len(entries)}
         (ready / 'delivery.json').write_bytes(json_bytes(receipt))
         # Output is not exposed until every byte check passes. Existing targets are refused.
         output.mkdir()
         try:
             for p in ready.iterdir():
                 shutil.copyfile(p, output / p.name)
+            if digest((output / archive.name).read_bytes()) != receipt['zip']['sha256']:
+                raise ValueError('DELIVERY_COPY_CHANGED')
             validate(load_archive(output / archive.name))
-            for row in documents.values():
-                if (output / Path(row['file']).name).read_bytes() != entries[row['file']]:
-                    raise ValueError('DOWNLOAD_COPY_CHANGED')
         except BaseException:
             shutil.rmtree(output)
             raise
     return receipt
 
 
-def inspect_received(root, pdfs):
-    """Measure received files; a byte difference alone does not prove manuscript change."""
+def inspect_received(root, pdfs, baseline=False):
+    """Measure received files; a byte difference alone does not prove manuscript change.
+
+    baseline=True: the PDFs were rendered locally from this package (no web PDF)."""
     root = Path(root)
     try:
         m = json.loads((root / 'delivery-manifest.json').read_text())
@@ -226,7 +309,7 @@ def inspect_received(root, pdfs):
     except (FileNotFoundError, ValueError):
         m = {}
     binding = {'status': 'UNVERIFIED', 'reason': 'Legacy or absent handoff manifest; inspect content/receipts separately.'}
-    if m.get('handoff_version') == 1:
+    if m.get('handoff_version') in (1, HANDOFF_VERSION):
         try:
             names = m['files']
             if not isinstance(names, dict) or len(names) > 10000:
@@ -240,8 +323,10 @@ def inspect_received(root, pdfs):
                     raise ValueError('PACKAGE_TOO_LARGE')
                 entries[name] = read_regular(p)
             validate(entries)
-            binding = {'status': 'VERIFIED', 'revision': m.get('revision'),
-                       'meaning': 'Captured HTML/resources/renderer/PDF receipt bytes match; no semantic approval.'}
+            binding = {'status': 'VERIFIED', 'revision': m.get('revision'), 'handoff_version': m['handoff_version'],
+                       'meaning': ('Captured HTML/resources/renderer/PDF receipt bytes match; no semantic approval.'
+                                   if m['handoff_version'] == 1 else
+                                   'Captured HTML/CSS/assets/records bytes match; no PDF, no semantic approval.')}
         except (OSError, ValueError, KeyError, TypeError) as e:
             binding = {'status': 'INVALID', 'reason': str(e)}
     result = {}
@@ -273,6 +358,8 @@ def inspect_received(root, pdfs):
             state = 'AMBIGUOUS_EMBEDDED_PDFS'
         elif hashes:
             state = 'BYTE_MATCH' if actual['sha256'] in hashes else 'BYTE_DIFFERENT'
+        elif baseline:
+            state = 'LOCAL_BASELINE'
         elif isinstance(expected, str) and len(expected) == 64:
             state = 'MANIFEST_HASH_MATCH' if actual['sha256'] == expected else 'BYTE_DIFFERENT'
         else:
@@ -287,16 +374,14 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('source', type=Path)
     p.add_argument('output', type=Path)
-    p.add_argument('--notes-pdf', required=True, type=Path)
-    p.add_argument('--workbook-pdf', required=True, type=Path)
     p.add_argument('--revision', required=True)
     p.add_argument('--file-prefix', required=True, help='Example: 수치해석 4주차')
     p.add_argument('--status', choices=('draft', 'web-reviewed'), default='draft')
     p.add_argument('--include', action='append', default=[], help='Additional required file relative to source, e.g. practice_week4.py')
     a = p.parse_args()
     try:
-        print(json.dumps(build(a.source, {'notes': a.notes_pdf, 'workbook': a.workbook_pdf},
-                               a.output, a.revision, a.file_prefix, a.status, a.include), ensure_ascii=False, indent=2))
+        print(json.dumps(build(a.source, a.output, a.revision, a.file_prefix, a.status, a.include),
+                         ensure_ascii=False, indent=2))
     except (OSError, ValueError, KeyError, zipfile.BadZipFile) as e:
         p.exit(1, f'Handoff stopped: {e}\n')
 
