@@ -1,0 +1,44 @@
+{
+  "filename": "noto-cjk-kr-subset-fonts-r01.zip",
+  "sha256": "638703212caa35e64efe176ab2bac6284930806339beecbd9ca2d10768a499a8",
+  "bytes": 43242536,
+  "file_count": 11,
+  "contents": "Noto Serif/Sans/Sans Mono CJK KR subset OTFs, OFL licenses, SUBSET.txt, unicodes.txt",
+  "families": [
+    "Noto Serif CJK KR",
+    "Noto Sans CJK KR",
+    "Noto Sans Mono CJK KR"
+  ],
+  "license": "OFL-1.1",
+  "files": {
+    "NotoSansCJKkr-Bold.otf": {
+      "bytes": 5324224,
+      "sha256": "7afb4f5217e4d33eb24cee6cea92d52dbc7d2b1088f89e4d228f6c7501394ebd"
+    },
+    "NotoSansCJKkr-Medium.otf": {
+      "bytes": 5159604,
+      "sha256": "9f4e823099239b294b49caa96f9eae0593d73488ffdb3614bdfed9e0bbb49598"
+    },
+    "NotoSansCJKkr-Regular.otf": {
+      "bytes": 5131268,
+      "sha256": "db073264ff1bf1842343207d87592ece825703540209a5c68b4baa580bdf40b9"
+    },
+    "NotoSansMonoCJKkr-Bold.otf": {
+      "bytes": 5284820,
+      "sha256": "8a759aeff73f6553aba1fb73e0436ff6841fa384c891c7845e21d34ce9123443"
+    },
+    "NotoSansMonoCJKkr-Regular.otf": {
+      "bytes": 5092040,
+      "sha256": "10c7b9db13cb5712ff1111b1909505809109f8929b1e017ed59cb9bd8ca37470"
+    },
+    "NotoSerifCJKkr-Bold.otf": {
+      "bytes": 8671880,
+      "sha256": "94c834bdbe230d5ff54a0bd3a0c00d9016b9d7d3757b945eda50fcdcff5cf94e"
+    },
+    "NotoSerifCJKkr-Regular.otf": {
+      "bytes": 8415888,
+      "sha256": "fdfe6331c653f785334df810e866aae8fbe0d6e3dfd4861ecac06fa34d419219"
+    }
+  },
+  "drive_file_id": "1Z0Wlu7PvQxBev4g6Oh08pPAqw6LRPTIv"
+}

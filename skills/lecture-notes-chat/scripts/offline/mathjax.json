@@ -1,0 +1,9 @@
+{
+  "filename": "mathjax-3.2.1-node-modules-r01.zip",
+  "sha256": "6cdc739d79102c57a5cca5e13feca8e97ba04bb6d8af98a608d31363eba1fd47",
+  "bytes": 11714100,
+  "file_count": 3576,
+  "contents": "node_modules/ from scripts/package-lock.json (npm ci --ignore-scripts); no .bin links",
+  "module": "node_modules/mathjax-full",
+  "drive_file_id": "1BmgKdcoumtwN9rUy4vHdGgUToUPMRxof"
+}

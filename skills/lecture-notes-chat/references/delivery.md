@@ -4,7 +4,7 @@
 
 ## 준비와 실행
 
-전달도 [runtime.md](runtime.md)에서 확인한 같은 Python·격리 PYTHONPATH·MathJax 경로를 사용한다. 폰트 파일은 동봉하지 않는다. 배포 견본의 sample-process.svg와 sample-slide-crop.png는 합성 자산이며, 실제 편집본에는 그 원고가 사용하는 자산을 포함한다.
+전달도 [runtime.md](runtime.md)에서 확인한 같은 Python과 실행 환경 변수(격리 PYTHONPATH·MathJax·글꼴 설정)를 사용한다. 폰트 파일은 동봉하지 않는다. 배포 견본의 sample-process.svg와 sample-slide-crop.png는 합성 자산이며, 실제 편집본에는 그 원고가 사용하는 자산을 포함한다.
 
 원고·CSS·자산이 준비된 새 폴더에서 관리 렌더러의 `--prepare`로 두 HTML을 준비하고 그 HTML로 PDF를 생성한다. PDF 옆 `.render.json`과 검사한 PDF를 보존한다. 페이지 하단 정정이 있으면 영수증의 `page_notes`와 실제 PDF의 호출·각주 위치를 대조한다. 렌더러의 배치 검사를 전 페이지 시각 확인으로 확대하지 않는다. HTML·자산을 바꿨으면 PDF를 다시 만들고 실제 변경·조판 영향 범위를 확인한 뒤 전달한다. 포장만을 위해 다시 렌더하지 않는다.
 

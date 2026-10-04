@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Fetch or read the pinned wheel ZIP, verify every byte, extract into a NEW directory."""
+"""Fetch or read a pinned runtime ZIP (wheels, MathJax, fonts), verify it, extract into a NEW directory."""
 import argparse
 import hashlib
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import shutil
 import stat
 import urllib.error
@@ -84,14 +84,40 @@ def extract_verified(archive, output, attachment, rows):
     return wheels
 
 
-def fetch_bundle(output, archive=None):
+def extract_component(archive, output, spec):
+    """MathJax/font ZIP: the managed archive SHA-256 pins every byte; extract regular files only."""
+    archive, output = Path(archive), Path(output).absolute()
+    if not archive.is_file() or archive.stat().st_size != spec['bytes'] or digest(archive) != spec['sha256']:
+        raise ValueError('ARCHIVE_HASH_OR_SIZE_MISMATCH: ' + spec['filename'])
+    if os.path.lexists(output):
+        raise ValueError('Choose a NEW output directory')
+    with zipfile.ZipFile(archive) as z:
+        entries = [i for i in z.infolist() if not i.is_dir()]
+        for info in entries:
+            path, mode = PurePosixPath(info.filename), info.external_attr >> 16
+            if (path.is_absolute() or '..' in path.parts or info.flag_bits & 1 or
+                    (stat.S_IFMT(mode) and not stat.S_ISREG(mode))):
+                raise ValueError('UNSAFE_ARCHIVE_MEMBER: ' + info.filename)
+        if len(entries) != spec['file_count']:
+            raise ValueError('ARCHIVE_FILE_SET_CHANGED: ' + spec['filename'])
+        output.mkdir(parents=True)
+        for info in entries:
+            target = output.joinpath(*PurePosixPath(info.filename).parts)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with z.open(info) as source, target.open('xb') as dest:
+                shutil.copyfileobj(source, dest)
+    return output
+
+
+def fetch_bundle(output, archive=None, offline=None):
+    offline = offline or ROOT / 'offline'
     output = Path(output).absolute()
     if os.path.lexists(output) or output.resolve().is_relative_to(ROOT.parent):
         raise ValueError('Choose a NEW output directory outside the managed skill')
-    attachment = json.loads((ROOT / 'offline/attachment.json').read_text())
-    rows = json.loads((ROOT / 'offline/wheel-sources.json').read_text())
+    attachment = json.loads((offline / 'attachment.json').read_text())
+    rows = json.loads((offline / 'wheel-sources.json').read_text())
     output.mkdir(parents=True, exist_ok=False)
-    result = {'status': 'INCOMPLETE', 'download_url': attachment['download_url'],
+    result = {'status': 'INCOMPLETE', 'download_url': attachment.get('download_url'),
               'source': 'local_archive' if archive is not None else 'https_download',
               'installation_performed': False}
     try:

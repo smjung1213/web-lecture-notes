@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "target": {
+    "sys_platform": "linux",
+    "machine": "x86_64",
+    "python": "3.12",
+    "implementation": "CPython"
+  },
+  "minimum_glibc": "2.28",
+  "observed_success": null,
+  "versions": {
+    "beautifulsoup4": "4.14.3",
+    "brotli": "1.2.0",
+    "cffi": "2.0.0",
+    "cssselect2": "0.9.0",
+    "fonttools": "4.63.0",
+    "pillow": "12.3.0",
+    "pycparser": "3.0",
+    "pydyf": "0.12.1",
+    "pypdf": "6.17.0",
+    "pyphen": "0.17.2",
+    "soupsieve": "2.10",
+    "tinycss2": "1.5.1",
+    "tinyhtml5": "2.1.0",
+    "typing_extensions": "4.16.0",
+    "weasyprint": "70.0",
+    "webencodings": "0.6.1",
+    "zopfli": "0.4.3"
+  }
+}

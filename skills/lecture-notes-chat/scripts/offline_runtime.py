@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Install verified local wheels into a NEW directory; preserve the base Python."""
+"""Prepare the render runtime from pinned Drive files in a NEW directory; preserve the base Python.
+
+Run once without archives: the result lists only the missing pinned files (wheels for this
+Python, MathJax, fonts). Pass them back with --archive/--mathjax-archive/--fonts-archive.
+"""
 import argparse
 import datetime
 import hashlib
@@ -9,10 +13,13 @@ import os
 from pathlib import Path
 import platform
 import re
+import shutil
 import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent
+WHEEL_SETS = (ROOT / 'offline', ROOT / 'offline/cp312')
+FONT_FAMILIES = ('Noto Serif CJK KR', 'Noto Sans CJK KR', 'Noto Sans Mono CJK KR')
 
 
 def sha(path):
@@ -27,6 +34,15 @@ def save(path, value):
     with Path(path).open('x', encoding='utf-8') as stream:
         json.dump(value, stream, ensure_ascii=False, indent=2)
         stream.write('\n')
+
+
+def wheel_set():
+    """Managed wheel data for this Python; an unsupported Python fails check_target."""
+    minor = '.'.join(platform.python_version_tuple()[:2])
+    for offline in WHEEL_SETS:
+        if json.loads((offline / 'runtime-lock.json').read_text())['target']['python'] == minor:
+            return offline
+    return WHEEL_SETS[0]
 
 
 def check_target(target):
@@ -97,10 +113,10 @@ def command(output, label, argv, env, timeout=180):
 
 
 
-def verify_wheels(bundle):
+def verify_wheels(bundle, offline=None):
     """Trust managed PyPI hashes, never scripts or a manifest from the attachment."""
     bundle = Path(bundle).resolve()
-    rows = json.loads((ROOT / 'offline/wheel-sources.json').read_text())
+    rows = json.loads(((offline or wheel_set()) / 'wheel-sources.json').read_text())
     expected = {r['filename']: r['sha256'] for r in rows}
     if {p.name for p in bundle.iterdir()} != set(expected):
         raise ValueError('WHEEL_FILE_SET_CHANGED: point --wheels at the exact 17-wheel directory')
@@ -111,13 +127,13 @@ def verify_wheels(bundle):
     return expected
 
 
-def install_command(wheels, site, output):
+def install_command(wheels, site, output, offline=None):
     return [sys.executable, '-B', '-m', 'pip', '--isolated', 'install',
             '--disable-pip-version-check', '--no-index', '--find-links', str(wheels),
             '--only-binary=:all:', '--require-hashes', '--no-cache-dir', '--no-compile',
             '--ignore-installed', '--target', str(site),
             '--report', str(output / 'evidence/install-report.json'),
-            '-r', str(ROOT / 'offline/requirements-offline.txt')]
+            '-r', str((offline or wheel_set()) / 'requirements-offline.txt')]
 
 
 def already_available():
@@ -132,7 +148,45 @@ def already_available():
     return True
 
 
-def run(output, wheels=None, mathjax_root=None, archive=None):
+def mathjax_ready(env):
+    try:
+        r = subprocess.run(['node', str(ROOT / 'typeset.cjs'), '--identity'], env=env,
+                           capture_output=True, text=True, timeout=120)
+        return r.returncode == 0 and json.loads(r.stdout).get('version') == '3.2.1'
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        return False
+
+
+def fonts_ready(env):
+    try:
+        return all(subprocess.run(['fc-match', '-f', '%{family}', family], env=env, capture_output=True,
+                                  text=True, timeout=30).stdout.split(',')[0] == family
+                   for family in FONT_FAMILIES)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def install_fonts(archive, output):
+    from fetch_runtime import extract_component
+    spec = json.loads((ROOT / 'offline/fonts.json').read_text())
+    fonts = extract_component(archive, output / 'fonts', spec)
+    for name, row in spec['files'].items():
+        if not (fonts / name).is_file() or sha(fonts / name) != row['sha256']:
+            raise ValueError('FONT_HASH_MISMATCH: ' + name)
+    conf = output / 'fonts.conf'
+    conf.write_text('<?xml version="1.0"?>\n<!DOCTYPE fontconfig SYSTEM "fonts.dtd">\n<fontconfig>\n'
+                    '  <include ignore_missing="yes">/etc/fonts/fonts.conf</include>\n'
+                    f'  <dir>{fonts}</dir>\n  <cachedir>{output / "fontconfig-cache"}</cachedir>\n'
+                    '</fontconfig>\n', encoding='utf-8')
+    return conf
+
+
+def required_file(spec):
+    return {k: spec[k] for k in ('filename', 'bytes', 'sha256', 'drive_file_id')}
+
+
+def run(output, wheels=None, mathjax_root=None, archive=None, mathjax_archive=None,
+        fonts_archive=None, node=None):
     if wheels is not None and archive is not None:
         raise ValueError('Choose either --wheels or --archive')
     output = Path(output).absolute()
@@ -141,7 +195,8 @@ def run(output, wheels=None, mathjax_root=None, archive=None):
         raise ValueError('Choose a NEW output directory outside the skill and wheel directory')
     output.mkdir(parents=True, exist_ok=False)
     (output / 'evidence').mkdir()
-    lock = json.loads((ROOT / 'offline/runtime-lock.json').read_text())
+    offline = wheel_set()
+    lock = json.loads((offline / 'runtime-lock.json').read_text())
     names = sorted(set(lock['versions']) | {'pip'})
     summary = {'status': 'INCOMPLETE', 'stage': 'preflight', 'installation_performed': False,
                'visual_review': 'NOT_PERFORMED', 'preservation_scope': names}
@@ -151,9 +206,47 @@ def run(output, wheels=None, mathjax_root=None, archive=None):
         before = snapshot(names)
         save(output / 'evidence/base-before.json', before)
         env = clean_environment()
+        changed = {}
+        if node is not None:
+            changed['PATH'] = str(Path(node).resolve().parent) + os.pathsep + env.get('PATH', '')
         if mathjax_root is not None:
-            env['MATHJAX_MODULE_ROOT'] = str(Path(mathjax_root).resolve())
-        if already_available():
+            changed['MATHJAX_MODULE_ROOT'] = str(Path(mathjax_root).resolve())
+        env.update(changed)
+        if shutil.which('node', path=env.get('PATH')) is None:
+            raise RuntimeError('NODE_REQUIRED: pass --node with the existing Node 18+ executable')
+        python_ready = already_available()
+        required = []
+        summary['stage'] = 'mathjax'
+        if not mathjax_ready(env):
+            if mathjax_archive is None:
+                required.append(required_file(json.loads((ROOT / 'offline/mathjax.json').read_text())))
+            else:
+                from fetch_runtime import extract_component
+                spec = json.loads((ROOT / 'offline/mathjax.json').read_text())
+                extract_component(mathjax_archive, output / 'mathjax', spec)
+                changed['MATHJAX_MODULE_ROOT'] = str(output / 'mathjax' / spec['module'])
+                env.update(changed)
+                if not mathjax_ready(env):
+                    raise RuntimeError('MATHJAX_SETUP_FAILED')
+        summary['stage'] = 'fonts'
+        if not fonts_ready(env):
+            if fonts_archive is None:
+                required.append(required_file(json.loads((ROOT / 'offline/fonts.json').read_text())))
+            else:
+                changed['FONTCONFIG_FILE'] = str(install_fonts(fonts_archive, output))
+                env.update(changed)
+                if not fonts_ready(env):
+                    raise RuntimeError('FONT_SETUP_FAILED')
+        if not python_ready:
+            summary['actual_target'] = check_target(lock['target'])
+            if wheels is None and archive is None:
+                required.append(required_file(json.loads((offline / 'attachment.json').read_text())))
+        if required:
+            summary['required_files'] = required
+            raise RuntimeError('RUNTIME_FILES_REQUIRED: download these pinned Drive files by file ID '
+                               '(raw) and rerun in a NEW output with the matching archive options: ' +
+                               ', '.join(r['filename'] for r in required))
+        if python_ready:
             summary['mode'] = 'REUSE_EXISTING_RUNTIME'
             # A previous isolated setup may itself be the current environment.
             # Do not fall back to base site-packages when reusing it.
@@ -163,27 +256,24 @@ def run(output, wheels=None, mathjax_root=None, archive=None):
             child += [str(ROOT / 'preflight.py'), '--output', str(output / 'preflight')]
         else:
             summary['mode'] = 'ISOLATED_OFFLINE_INSTALL'
-            summary['actual_target'] = check_target(lock['target'])
             if archive is not None:
                 from fetch_runtime import fetch_bundle
                 summary['stage'] = 'verify-release-archive'
-                wheels = fetch_bundle(output / 'bundle', archive)
-            if wheels is None:
-                raise ValueError('WHEELS_REQUIRED: download the pinned GitHub Release ZIP with an '
-                                 'authorized tool and pass --archive, or attach it; no PyPI fallback')
+                wheels = fetch_bundle(output / 'bundle', archive, offline)
             wheels = Path(wheels).resolve()
-            wheel_hashes = verify_wheels(wheels)
+            wheel_hashes = verify_wheels(wheels, offline)
             site = output / 'site-packages'
             if os.path.lexists(site):
                 raise FileExistsError('Choose a NEW site-packages directory')
             summary['stage'] = 'offline-install'
-            command(output, '01-offline-install', install_command(wheels, site, output), env)
+            command(output, '01-offline-install', install_command(wheels, site, output, offline), env)
             summary['installation_performed'] = True
-            env['PYTHONPATH'] = str(site)
+            changed['PYTHONPATH'] = str(site)
+            env.update(changed)
             child = [sys.executable, '-B', '-S', str(ROOT / 'preflight.py'),
                      '--site', str(site), '--output', str(output / 'preflight')]
             summary['runtime_command_prefix'] = [sys.executable, '-B', '-S']
-            summary['runtime_environment'] = {'PYTHONPATH': str(site)}
+        summary['runtime_environment'] = changed
         summary['stage'] = 'synthetic-preflight'
         command(output, '02-preflight', child, env, timeout=240)
         summary['preflight'] = json.loads((output / 'preflight/preflight-result.json').read_text())
@@ -204,7 +294,7 @@ def run(output, wheels=None, mathjax_root=None, archive=None):
                 summary.update(status='BASE_PRESERVATION_CHECK_INCOMPLETE', preservation_error=str(exc))
         if wheel_hashes is not None:
             try:
-                summary['wheels_unchanged'] = verify_wheels(wheels) == wheel_hashes
+                summary['wheels_unchanged'] = verify_wheels(wheels, offline) == wheel_hashes
             except Exception as exc:
                 summary.update(status='WHEELS_CHANGED', wheels_unchanged=False, wheel_error=str(exc))
         save(output / 'result.json', summary)
@@ -215,7 +305,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     inputs = parser.add_mutually_exclusive_group()
     inputs.add_argument('--wheels', type=Path, help='Extracted directory of the 17 official wheels')
-    inputs.add_argument('--archive', type=Path, help='Pinned Release ZIP; verify and extract only if installation is needed')
+    inputs.add_argument('--archive', type=Path, help='Pinned wheel ZIP for this Python; verify and extract only if installation is needed')
+    parser.add_argument('--mathjax-archive', type=Path, help='Pinned MathJax 3.2.1 node_modules ZIP')
+    parser.add_argument('--fonts-archive', type=Path, help='Pinned Noto CJK KR font ZIP')
+    parser.add_argument('--node', type=Path, help='Existing Node 18+ executable when node is not on PATH')
     parser.add_argument('--verify-only', action='store_true')
     parser.add_argument('--output', type=Path)
     parser.add_argument('--mathjax-root', type=Path, help='Existing mathjax-full 3.2.1; no Node installation')
@@ -227,7 +320,8 @@ def main():
         return 0
     if args.output is None:
         parser.error('--output is required')
-    result = run(args.output, args.wheels, args.mathjax_root, args.archive)
+    result = run(args.output, args.wheels, args.mathjax_root, args.archive, args.mathjax_archive,
+                 args.fonts_archive, args.node)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result['status'] == 'AUTOMATED_CHECKS_PASSED_VISUAL_REVIEW_REQUIRED' else 1
 
