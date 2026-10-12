@@ -1,61 +1,61 @@
 # web-lecture-notes
 
-한국어 강의노트·연습문제의 집필, 정보 표현, 조판, 검토 기준. 관리 배포 패키지 버전은 **0.8.2**이다. 버전 문구나 파일 전달만으로 배포·활성화·외부 모델 실행을 완료했다고 하지 않는다. 실제 강의자료·전사본·학습노트·인증정보는 이 저장소에 넣지 않는다.
+강의자료(PDF)와 강의 전사본으로 한국어 **학습노트**와 **연습문제**를 만드는 ChatGPT 웹 스킬이다. 한 번에 한 과목·한 주차를 다루며, 결과는 PDF가 아니라 편집할 수 있는 HTML·CSS·자산 묶음(편집본 ZIP)이다.
 
-기본 목표는 처음 배우는 학부생이 개념·이유·중간 과정·조건을 이해하고 새 문제에 적용하는 것이며, 학습 방식은 writing.md ‘목표·독자·깊이’의 한 문장(평소 원자료와 대조, 시험 기간에는 노트만으로 복습, 두 경우 모두 충분)이다. 현재 사용자 지정이 우선하며 독자·선수지식·학습 방식·목표를 집필과 검토에 같은 구조화 learning_contract로 전달한다. 후속 검토의 자유문자 지시는 이 계약의 독자·목표를 다시 정의하지 않는다. 페이지·토큰 목표로 필요한 설명을 줄이지 않는다. 목적 없는 전문 확장은 제한하되 현재 위치에서 이해·복습·적용을 돕는 반복 설명은 보존한다. 원자료 파일 보존, 학습 정보 보존, 결과 PDF의 표현 방식은 서로 다르다. 수식은 MathJax로 조판하고, 직관적 이해를 돕는 원본 그림·도식과 읽기 좋은 표는 추출·크롭해 활용한다. 재작성은 실제 개선 이유가 있을 때 선택하며, 위치·길이·방향·색 묶음·단계 관계의 시각적 설명을 숫자·문장으로 대체하지 않는다.
+현재 버전은 **0.8.3**이다. 버전별 변경 내용은 커밋 기록에 있다.
 
-0.8.2는 알고리즘 3주차 최근접 쌍에서 원본 6줄 의사코드(CP_C를 따로 구해 세 쌍 중 최솟값 반환) 대신 줄을 합치고 조기 반환을 더한 재구성판만 ‘풀어 쓴 의사코드’로 실린 것에 대응한다. 원자료의 코드·의사코드는 원형 그대로 싣고 오류가 확인된 경우에만 원형 뒤에 교정판을 따로 둔다. 설명은 본문이나 주석으로 한다(writing.md ‘설명의 단위와 순서’). 도구·CSS는 0.8.1과 같다.
+> 개인 학습용으로 만든 작업 흐름이다. Google Drive 폴더 구조, 로컬 검토 단계 같은 전제가 이 사용 방식에 맞춰져 있다.
 
-0.8.1은 2026-10-03·04 웹 제작 세 건이 ‘생각 실패’(reasoning_cancelled)로 끊긴 것에 대응한다. 세 건 모두 마지막 활동이 Drive 업로드·GitHub 읽기·웹 검색이었고 그 뒤 4.5–6분 기록 없이 취소됐다. 실행 도중의 외부 호출을 줄인다. 스크립트와 delivery.md는 S1에서 지침과 함께 받고, 체크포인트는 S2·S4 뒤에만 올리며 업로드 뒤 메타데이터를 따로 조회하지 않는다(SKILL.md ‘응답 하나로 끝까지 하고 단계마다 Drive에 저장한다’). 도구·CSS·집필 기준은 0.8.0과 같다.
+## 무엇을 목표로 하는가
 
-0.8.0은 1–3주차 로컬 검토에서 웹 원고의 교수 설명 누락이 60·71·26건 나오고, coverage.md가 상투 문구로 채워지고, 수업에 없는 표준 유보가 반복된 것에 대응한다. source-inventory의 전사를 교수 설명 단위로 적고 자체 검토가 그 단위를 본문에서 직접 찾는다(SKILL.md 2·5). coverage.md는 예외 목록으로 줄였다(SKILL.md 4). 정정 구역은 원자료가 자기 맥락에서 틀렸을 때만 쓴다(writing.md). 학습 방식은 writing.md의 한 문장으로 고정하고 제작 요청문을 줄였으며, 장·소절은 `<section id>`로 감싼다(design.md). 도구·CSS는 0.7.1과 같다.
+처음 배우는 학부생이 개념과 그 이유, 중간 과정, 조건을 이해하고 새 문제에 적용할 수 있게 하는 것이 목표다. 평소에는 강의자료를 옆에 두고 대조하며 읽고, 시험 기간에는 노트만으로 복습할 수 있어야 한다.
 
-0.7.1은 제작 요청문에 남은 0.6.x 표현(쪽수 보고, 수식 ‘조판’, 글꼴 확인)을 0.7.0에 맞춘다.
+- **설명을 분량으로 줄이지 않는다.** 쪽수나 토큰 목표를 두지 않는다. 학습 목적과 관계없는 전문 확장은 줄이되, 이해와 복습을 돕는 반복 설명은 남긴다.
+- **원자료의 의미를 지킨다.** 교수의 설명·이유·강조·예시를 교수 설명 단위로 파악해 본문에 반영한다. 원자료의 코드·의사코드는 원형 그대로 싣고, 오류가 확인된 경우에만 원형 뒤에 교정판을 따로 둔다.
+- **역할에 맞게 표현한다.** 수식은 LaTeX로 적어 MathJax로 조판한다. 위치·방향·단계 관계를 보여 주는 원본 그림과 표는 필요한 영역을 잘라 그대로 쓰고, 시각적 설명을 숫자나 문장으로 대신하지 않는다.
 
-0.7.0부터 웹은 PDF를 만들지 않는다. 웹 실행 환경이 대화마다 달라(2026-10-03 기존 샌드박스, 10-04 렌더 도구 없는 Codex 런타임) 조판을 보장할 수 없고, 로컬 검토가 어차피 WeasyPrint 70.0으로 다시 렌더해 쪽별로 판독하기 때문이다. 웹 전달물은 HTML·CSS·자산·기록을 담은 편집본 ZIP 하나이며, 로컬 `lecture-week`가 그 HTML을 처음 렌더한 PDF를 기준으로 검토한다. 렌더러 선택·preflight·런타임 준비(runtime.md, preflight.py, offline_runtime.py, fetch_runtime.py, Drive 고정 파일)와 S5 렌더·판독 단계는 없어졌다. 단계별 Drive 체크포인트는 그대로다. 집필 기준과 CSS는 0.6.14와 같다.
+## 작동 흐름
 
-이전 버전의 변경 내역은 저장소 커밋 기록에 있다. 같은 고정 커밋의 지침·도구를 함께 사용하며 제작 메모에 버전과 커밋을 기록한다. 기존 PDF·영수증·편집본은 보존하고 새 후보를 실제로 확인한다. 로컬 검토 코드는 이 웹 저장소에 포함하지 않는다.
+```
+Google Drive 원자료 ─▶ ChatGPT 웹(Pro) 집필 ─▶ 편집본 ZIP ─▶ 로컬 검토·PDF 렌더 ─▶ 학습노트·연습문제 PDF
+```
 
-## 시작과 입력
+1. **집필(웹).** Pro가 이 저장소의 지침을 읽고 Drive의 원자료 전문을 읽은 뒤 학습노트·연습문제를 쓴다. 원자료 대조·계산·문장·이해의 네 가지를 자체 검토한 다음 편집본 ZIP 하나로 전달한다. 긴 작업 중 실행 환경이 초기화되는 경우에 대비해 단계마다 체크포인트를 Drive에 저장한다.
+2. **검토와 PDF(로컬).** 받은 HTML을 WeasyPrint 70.0으로 렌더하고, 쪽마다 판독하면서 원자료와 다시 대조해 고친다. 이 단계의 도구와 절차는 이 저장소에 포함되어 있지 않다.
 
-[범용 제작 요청](prompts/create-lecture-notes.md)의 맨 위에서 과목·주차·자료 범위를 채운다. 원자료 입력의 기본은 사용자가 연결한 **Google Drive 플러그인**이다. 과목·주차·파일명과 범위를 평소 말하듯 적으면 된다. Drive는 `대학교/<학기>/<과목>/` 아래 `강의 자료`·`강의 녹음`·`강의 노트`·`빌드` 구조이며, 경로를 따로 적을 필요는 없다. 독자 수준과 학습 방식은 요청문에 적힌 기본값(writing.md ‘목표·독자·깊이’)을 그대로 쓰면 되며 매번 고칠 필요는 없다. 단계 체크포인트와 편집본 ZIP은 과목 폴더의 `빌드/`에 저장한다(SKILL.md S0). 검토를 마친 이전 주차 학습노트 PDF는 `강의 노트/<N주차>/`에 두면 Pro가 찾아 읽는다. 현재 사용자 지정이 기본값보다 우선한다. 특정 과목·주차의 사례, 이전 대화, 견본을 새 주차의 원자료에 자동 포함하지 않는다.
+웹에서 PDF를 만들지 않는 이유는 대화마다 실행 환경이 달라 조판 결과를 보장할 수 없기 때문이다.
 
-이전 공식본·채택 보완과 과목별 지시·미배포 기준 차이는 기본 입력란에 두지 않는다. 기존 노트 개정에 이전 보완을 이어받아야 하거나 공통 지침과 다른 특별 요청이 있을 때만 `추가 요청`에 관련 정보·지시를 적는다. 이를 별도로 지정하지 않은 새 제작에서 필수 입력으로 요구하지 않는다.
+## 사용법
 
-파일 목록·검색 발췌를 전문 읽기로 대신하지 않는다. 전사 전문과 지정 PDF의 실제 페이지·표·그림을 확보한다. 접근이 막힌 파일과 단계만 알리고 필요하면 그 파일의 직접 첨부를 요청한다. 이미 접근 가능한 파일의 재업로드, 같은 장애의 반복 호출, Chat 라이브러리로의 자동 전환은 요구하지 않는다. 막히지 않은 독립 작업은 계속한다.
+**준비물**
 
-GitHub 플러그인으로 기본 브랜치와 커밋을 확인한 뒤 그 커밋에서 아래 지침 문서의 전문을 읽는다. CSS·HTML 견본은 실제 사용할 구조·스타일·data-latex를 확인하며 파생 SVG/MathML 캐시의 전수 읽기는 요구하지 않는다. 잘린 응답은 이어 읽고 같은 리비전에서 이미 읽은 파일은 재사용한다. 확인한 커밋은 제작 메모에 한 번 기록한다. 필수 파일을 확보하지 못하면 그 파일에 의존하는 부분만 미확인으로 남기고 임의 재구성하지 않는다.
+- GitHub와 Google Drive를 연결한 ChatGPT 웹
+- Drive의 `대학교/<학기>/<과목>/` 아래에 `강의 자료`, `강의 녹음`(전사본), `강의 노트`, `빌드` 폴더
 
-## 기준의 소유 파일
+**요청**
 
-| 실제로 읽을 파일 | 담당 기준 |
+1. 새 대화에 [`prompts/create-lecture-notes.md`](prompts/create-lecture-notes.md) 전체를 붙여 넣고 맨 위의 과목·주차·자료 범위를 채운다. 자료는 “02번 PDF ~p.18, 2주차 전사본 전체”처럼 평소 말로 적으면 된다.
+2. 결과물인 `<과목명> <N>주차 편집본.zip`이 Drive의 `빌드/<N>주차/` 아래 이번 제작 폴더에 저장된다.
+3. 로컬 검토 요청은 [`prompts/review-lecture-notes.md`](prompts/review-lecture-notes.md)를 참고한다.
+
+독자 수준과 학습 방식은 요청문의 기본값을 그대로 쓰면 된다. 이전 주차 학습노트를 `강의 노트/` 아래에 두면 선수지식을 확인하는 데 쓴다.
+
+## 저장소 구성
+
+| 파일 | 내용 |
 |---|---|
-| `skills/lecture-notes-chat/SKILL.md` | 입력·순서·source-inventory/coverage·산출물·완료 상태 |
-| `skills/lecture-notes-chat/references/writing.md` | 독자·설명 깊이·원자료 의미 보존·표현 선택·정정·문제 타당성 |
-| `skills/lecture-notes-chat/references/design.md` | 시각 위계·수식/표/그림 마크업·조판 기준(PDF 조판·확인은 로컬) |
-| `skills/lecture-notes-chat/assets/lecture.css` | 재사용 기본 스타일. 주차별 변경은 `local.css` |
-| `skills/lecture-notes-chat/assets/layout-sample.html` | 합성 구조·편집 가능한 LaTeX와 생성된 수식 캐시 |
+| [`skills/lecture-notes-chat/SKILL.md`](skills/lecture-notes-chat/SKILL.md) | 입력, 작업 단계(S0–S5), Drive 체크포인트, 산출물, 완료 상태 |
+| [`references/writing.md`](skills/lecture-notes-chat/references/writing.md) | 독자와 설명 깊이, 원자료 의미 보존, 표현 선택, 정정, 문제의 타당성 |
+| [`references/design.md`](skills/lecture-notes-chat/references/design.md) | 디자인 기준 v3.4: 시각 위계, 수식·표·그림 마크업, 조판 |
+| [`references/delivery.md`](skills/lecture-notes-chat/references/delivery.md) | 편집본 ZIP 구성과 검사 |
+| [`references/learning-contract.md`](skills/lecture-notes-chat/references/learning-contract.md) | 독자·선수지식·학습 방식·목표를 집필과 검토에 같게 전달하는 형식 |
+| `assets/lecture.css`, `assets/layout-sample.*` | 기본 스타일과 합성 견본(HTML·PDF·그림) |
+| `scripts/checkpoint.py`, `scripts/delivery.py` | 체크포인트 ZIP 생성·복원, 편집본 검사·포장. Python 표준 라이브러리만 쓴다 |
+| `scripts/render.py`, `typeset.cjs` 외 | 로컬에서 PDF를 만드는 렌더러. LaTeX를 MathJax로 정적 SVG·MathML로 바꾼 뒤 WeasyPrint 70.0에 넘긴다(Python 의존성 `requirements.txt`, Node 18 이상 `package.json`) |
+| `prompts/` | 웹 제작 요청문과 로컬 검토 안내 |
 
-`assets/layout-sample.pdf`, `sample-process.svg`, `sample-slide-crop.png`는 v3.4의 합성 견본이다. 원본 PDF 견본의 바이너리 접근이 안 되면 CSS/HTML로 진행하고 시각 확인 여부만 기록한다.
+`.codex-plugin/plugin.json`과 `agents/openai.yaml`은 설치용 메타데이터다.
 
-웹은 PDF를 렌더하지 않으며 렌더 도구를 확인·설치하지 않는다. S1에서 지침과 같은 커밋의 `references/delivery.md`와 `scripts/`(checkpoint.py·delivery.py·render.py·css_resources.py)를 받아 두고, S5에서 편집본 ZIP 하나로 묶는다. `delivery.py`와 `checkpoint.py`는 Python 표준 라이브러리만 쓴다.
+## 포함하지 않는 것
 
-새 제작은 design.md의 디자인 기준 v3.4를 사용한다. 기존 노트·편집본은 동봉 lecture.css를 유지하며 새 CSS로 재조판·재출판하지 않는다.
-
-`scripts/render.py`, `css_resources.py`, `typeset.cjs`, `package.json`, `package-lock.json`, `requirements.txt`는 로컬 검토가 PDF를 만드는 관리 렌더러다. 웹은 `delivery.py`가 HTML 검사에 render.py·css_resources.py를 가져올 때만 쓰며 렌더를 실행하지 않는다. 신뢰하는 Node 도우미가 LaTeX를 정적 SVG와 HTML용 MathML로 변환한 뒤 WeasyPrint에 넘기는 경로이며, 사용법·검증 범위·검색/복사 및 접근성의 한계는 design.md를 따른다. 설치 설정 `.codex-plugin/plugin.json`, `agents/openai.yaml`은 배포 메타데이터이지 웹 대화의 모델·권한 변경 명령이 아니다.
-
-## 제작과 후속 검토
-
-웹에서 현재 선택된 Pro가 원자료 읽기 → 원자료 요소·교수 설명 단위 파악 → 표현 선택과 설명·문제 집필 → 네 자체 검사(원자료 대조·계산·문장·이해) → 편집본 ZIP을 수행한다. coverage.md는 대응표가 아니라 재작성한 그림·표, 의도적으로 뺀 것, 읽지 못한 것의 예외 목록이다(SKILL.md 4). 수식 재조판과 시각자료 보존은 따로 확인한다. 같은 숫자·식이 남아도 그림의 시각적 설명이 사라졌으면 완전 대응이 아니다.
-
-이후 Drive의 편집본 ZIP을 로컬 프로젝트에 두고 Claude Code에 ‘[과목] [주차] 검토해’라고 요청한다. 로컬이 HTML을 WeasyPrint 70.0으로 처음 렌더하고 그 PDF를 쪽별로 판독한다([로컬 검토 요청](prompts/review-lecture-notes.md)). 후속 검토·수정·공식 저장의 실행 계약은 로컬 `lecture-week`가 소유하며, 이 저장소는 CLI·계정·외부 모델을 설치하거나 사용 가능하다고 보증하지 않는다.
-
-## 전달·보존·배포
-
-웹 전달물은 [전달 도우미](skills/lecture-notes-chat/references/delivery.md)가 검증한 `<과목명> <N>주차 편집본.zip` 하나이며 Drive 이번 제작 폴더에 올린다. 표시 과목명의 띄어쓰기를 유지하고 N에는 앞자리 0을 붙이지 않는다. ZIP에는 HTML 두 개·CSS·사용 자산·input-contract.json·source-inventory.md·coverage.md·production-note.md를 넣는다. 수식은 `data-latex`의 LaTeX로 담고, 정적 캐시와 재생성 도구는 로컬 포장이 넣는다. PDF·폰트 파일·node_modules·원시 외부 로그·실제 강의 원자료를 넣지 않는다.
-
-원자료·받은 산출물·기존 공식본은 보존하며 새 수정 사본에서 작업한다. 웹은 다운로드 파일을 제공할 뿐 사용자 컴퓨터나 GitHub의 활성 파일을 갱신했다고 하지 않는다. 후속 로컬 검토의 공식 저장은 현재 요청과 로컬 저장 규칙을 따른다. 검토만/저장 금지 요청은 지키고, 이미 허용된 적용을 통상적인 구현 선택마다 재승인받지 않는다. 공식 갱신 전 이전 PDF/편집본을 보존·바이트 확인하고 두 PDF와 최신 편집 ZIP의 대응을 확인한다.
-
-관리 원본은 `스킬/web-lecture-notes/`의 웹 스킬·메타데이터와 `웹 Chat 배포/GitHub/`의 README/prompts다. 관리 경로는 이 README와 웹 스킬의 링크로 확인한다. 과거 검토 패키지의 path-map.json은 당시 경로 대응을 설명하는 역사 자료다. 새 웹 자산·스크립트도 같은 소유 경로에 둔다. `스킬/제작 엔진/tools/package_web.py`의 명시적 허용 목록으로 지침만 배포하며, 렌더러는 로컬 도우미에서 관리 웹 원본을 재사용한다. 관리 원본·저장소·배포 ZIP의 바이트를 확인하고 과거 대형 다중 모델·원장 엔진을 다시 활성화하지 않는다.
-
-로컬 관리자 검사는 작업공간에서 `스킬/제작 엔진/pyproject.toml`의 의존 환경을 사용한다. `python "스킬/web-lecture-notes/skills/lecture-notes-chat/scripts/render.py" <HTML> --check --ready`는 편집 자산·수식 캐시를 검사하고, `python -m lecture_tools pack <편집 폴더> <새 ZIP>`은 새 편집 ZIP을 검사·작성한다. 로컬 회귀는 `python -m pytest "스킬/제작 엔진/tests"`로 실행한다. 웹 지침 후보 포장은 `python "스킬/제작 엔진/tools/package_web.py" <새 staging> <새 ZIP>`이며 GitHub 게시와 별개다. 이 명령들은 웹 대화 작성자에게 로컬 파일 권한이 생겼다는 뜻이 아니다.
+실제 강의자료·전사본·완성된 노트와 인증정보는 이 저장소에 넣지 않는다. 견본 HTML·PDF·그림은 모두 합성 자료다. 로컬 검토 도구도 포함하지 않는다.

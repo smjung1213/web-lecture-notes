@@ -8,4 +8,4 @@
 
 ---
 
-GitHub 플러그인으로 https://github.com/smjung1213/web-lecture-notes 의 최신 기본 브랜치 커밋을 한 번 고정하고, 그 커밋의 README와 `skills/lecture-notes-chat/SKILL.md`·`references/writing.md`·`references/design.md`를 전문으로 읽어줘. 그다음 SKILL.md대로 위 한 과목·한 주차의 학습노트와 연습문제 편집본을 이번 응답 하나로 전달까지 만들어줘. PDF는 만들지 마. 응답이 전달 전에 끝나면 내가 첨부 없이 ‘계속’을 보낼게.
+GitHub 플러그인으로 https://github.com/smjung1213/web-lecture-notes 의 최신 기본 브랜치 커밋을 한 번 고정하고, 그 커밋의 `skills/lecture-notes-chat/SKILL.md`·`references/writing.md`·`references/design.md`를 전문으로 읽어줘. 그다음 SKILL.md대로 위 한 과목·한 주차의 학습노트와 연습문제 편집본을 이번 응답 하나로 전달까지 만들어줘. PDF는 만들지 마. 응답이 전달 전에 끝나면 내가 첨부 없이 ‘계속’을 보낼게.
