@@ -2,7 +2,7 @@
 
 강의자료(PDF)와 강의 전사본으로 한국어 **학습노트**와 **연습문제**를 만드는 ChatGPT 웹 스킬이다. 한 번에 한 과목·한 주차를 다루며, 결과는 PDF가 아니라 편집할 수 있는 HTML·CSS·자산 묶음(편집본 ZIP)이다.
 
-현재 버전은 **0.8.6**이다. 버전별 변경 내용은 커밋 기록에 있다.
+현재 버전은 **0.9.0**이다. 버전별 변경 내용은 커밋 기록에 있다.
 
 > 개인 학습용으로 만든 작업 흐름이다. Google Drive 폴더 구조, 로컬 검토 단계 같은 전제가 이 사용 방식에 맞춰져 있다.
 
@@ -10,8 +10,8 @@
 
 처음 배우는 학부생이 개념과 그 이유, 중간 과정, 조건을 이해하고 새 문제에 적용할 수 있게 하는 것이 목표다. 평소에는 강의자료를 옆에 두고 대조하며 읽고, 시험 기간에는 노트만으로 복습할 수 있어야 한다.
 
-- **설명을 분량으로 줄이지 않는다.** 쪽수나 토큰 목표를 두지 않는다. 학습 목적과 관계없는 전문 확장은 줄이되, 이해와 복습을 돕는 반복 설명은 남긴다.
-- **원자료의 의미를 지킨다.** 교수의 설명·이유·강조·예시를 교수 설명 단위로 파악해 본문에 반영한다. 원자료의 코드·의사코드는 원형 그대로 싣고, 오류가 확인된 경우에만 원형 뒤에 교정판을 따로 둔다.
+- **핵심층과 펼침층으로 나눠 쓴다.** 핵심층은 강의자료의 내용과 교수가 그것을 풀어 준 설명이며 분량 상한(예산)을 둔다. 노트가 더한 보충, 수업 여담, 더 엄밀한 단서는 종류를 밝힌 펼침 블록에 둔다. 같은 원고에서 펼침 블록을 숨기면 시험 직전용 핵심판이 된다.
+- **원자료의 의미를 지킨다.** 교수의 설명·이유·강조·예시를 교수 설명 단위로 파악해 본문에 반영하고, 교수가 강조한 것과 비중을 낮춘 것을 분량에 반영한다. 본문의 정정은 강의자료에 인쇄된 오류에만 붙인다. 원자료의 코드·의사코드는 원형 그대로 싣고, 오류가 확인된 경우에만 원형 뒤에 교정판을 따로 둔다.
 - **역할에 맞게 표현한다.** 수식은 LaTeX로 적어 MathJax로 조판한다. 위치·방향·단계 관계를 보여 주는 원본 그림과 표는 필요한 영역을 잘라 그대로 쓰고, 시각적 설명을 숫자나 문장으로 대신하지 않는다.
 
 ## 작동 흐름
@@ -35,7 +35,7 @@ Google Drive 원자료 ─▶ ChatGPT 웹(Pro) 집필 ─▶ 편집본 ZIP ─�
 
 **요청**
 
-1. 새 대화에 [`prompts/create-lecture-notes.md`](prompts/create-lecture-notes.md) 전체를 붙여 넣고 맨 위의 과목·주차·자료 범위를 채운다. 자료는 “02번 PDF ~p.18, 2주차 전사본 전체”처럼 평소 말로 적으면 된다.
+1. 새 대화에 [`prompts/create-lecture-notes.md`](prompts/create-lecture-notes.md) 전체를 붙여 넣고 맨 위의 과목·주차·자료 범위를 채운다. 자료는 “02번 PDF ~p.18, 2주차 전사본 전체”처럼 평소 말로 적으면 된다. 핵심층 분량은 비워 두면 기본 예산을 쓰고, 줄이거나 늘리려면 글자 수를 적는다.
 2. 결과물인 `<과목명> <N>주차 편집본.zip`이 Drive의 `빌드/<N>주차/` 아래 이번 제작 폴더에 저장된다.
 3. 응답이 전달 전에 끝나거나 ‘생각 실패’·연결 해제로 끊기면 **같은 대화에 ‘계속’만 보낸다.** Drive에 남은 마지막 단계 체크포인트에서 이어 간다. 새 대화로 처음부터 다시 시작하면 그동안의 작업을 쓰지 못한다.
 4. 로컬 검토 요청은 [`prompts/review-lecture-notes.md`](prompts/review-lecture-notes.md)를 참고한다.
@@ -47,8 +47,8 @@ Google Drive 원자료 ─▶ ChatGPT 웹(Pro) 집필 ─▶ 편집본 ZIP ─�
 | 파일 | 내용 |
 |---|---|
 | [`skills/lecture-notes-chat/SKILL.md`](skills/lecture-notes-chat/SKILL.md) | 입력, 작업 단계(S0–S5), Drive 체크포인트, 산출물, 완료 상태 |
-| [`references/writing.md`](skills/lecture-notes-chat/references/writing.md) | 독자와 설명 깊이, 원자료 의미 보존, 표현 선택, 정정, 문제의 타당성 |
-| [`references/design.md`](skills/lecture-notes-chat/references/design.md) | 디자인 기준 v3.4: 시각 위계, 수식·표·그림 마크업, 조판 |
+| [`references/writing.md`](skills/lecture-notes-chat/references/writing.md) | 독자, 두 층과 분량, 원자료 의미 보존, 표현 선택, 정정, 문제의 타당성 |
+| [`references/design.md`](skills/lecture-notes-chat/references/design.md) | 디자인 기준 v3.4: 시각 위계, 펼침 블록, 수식·표·그림 마크업, 조판 |
 | [`references/delivery.md`](skills/lecture-notes-chat/references/delivery.md) | 편집본 ZIP 구성과 검사 |
 | [`references/learning-contract.md`](skills/lecture-notes-chat/references/learning-contract.md) | 독자·선수지식·학습 방식·목표를 집필과 검토에 같게 전달하는 형식 |
 | `assets/lecture.css`, `assets/layout-sample.*` | 기본 스타일과 합성 견본(HTML·PDF·그림) |

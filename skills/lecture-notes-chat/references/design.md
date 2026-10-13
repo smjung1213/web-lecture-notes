@@ -4,7 +4,7 @@
 
 디자인 기준 v3.4(2026-09-29)는 앞으로 새로 만드는 노트에만 적용한다. **기존 노트·편집본은 동봉된 lecture.css를 유지하며 새 CSS로 재조판·재출판하지 않는다.** 원자료·사용자가 넣은 파일·받은 산출물·기존 게시 PDF는 보존하고, 출력은 새 이름으로 만든다.
 
-`assets/lecture.css`와 `layout-sample.html`을 출발점으로 한다. 견본 A(학습노트)와 견본 B(연습문제), `sample-process.svg`와 300dpi 합성 크롭 `sample-slide-crop.png`는 표현 예시이며 실제 강의자료·문제·구성·쪽수의 기준이 아니다. 내용의 필요성과 깊이는 writing.md가, 그 표현은 이 문서가 소유한다.
+`assets/lecture.css`와 `layout-sample.html`을 출발점으로 한다. 견본 A(학습노트)와 견본 B(연습문제), `sample-process.svg`와 300dpi 합성 크롭 `sample-slide-crop.png`는 표현 예시이며 실제 강의자료·문제·구성·쪽수의 기준이 아니다. 내용의 필요성과 깊이는 writing.md가, 그 표현은 이 문서가 소유한다. 견본에는 펼침 블록의 예가 없고, 장 끝 목록의 제목(‘정리’)과 연습문제 링크가 이전 형식으로 남아 있다. 이 둘은 견본이 아니라 아래 규칙을 따른다.
 
 기본은 A4, 좌우 30mm·위 22mm·아래 20mm, 명조 본문 10.5pt·줄 간격 1.72, 왼쪽 정렬과 `word-break:keep-all`이다. 한국어 양끝 정렬은 하지 않는다. 본문은 `Noto Serif CJK KR`, 제목·정보 줄·목차·출처·캡션·표·정리 번호·해설 라벨은 `Noto Sans CJK KR`, 코드는 `Noto Sans Mono CJK KR`을 쓴다. 렌더 환경에서 `fc-list : family`로 세 글꼴을 확인한다. 없으면 조용히 대체하지 않고 해당 조판 단계를 미완료로 보고한다(관리 렌더러도 렌더 전에 확인한다). 원격 폰트에 의존하거나 폰트 파일을 배포하지 않는다.
 
@@ -25,7 +25,7 @@
 
 ## 복습 경로와 교수 강조의 표현
 
-장 도입·장 정리가 필요한지는 writing.md가 판단한다. `.chapter-lead`는 라벨 없이 조금 큰 도입 문단이다. `.chapter-summary`는 먹 회청 가로 띠 제목과 본문 바탕 없는 항목 목록이며, 항목마다 돌아갈 절 번호를 `.ref`로 붙인다. 필요하면 `.self-check`에 실제 연습문제 링크를 둔다. 장마다 같은 개수를 두는 의무는 없으며, 요약에서 새 사실을 처음 가르치지 않는다.
+장 도입문과 장 끝 ‘외울 것’ 목록의 내용은 writing.md가 정한다. `.chapter-lead`는 라벨 없이 조금 큰 도입 문단이다. `.chapter-summary`는 장 끝의 ‘외울 것’ 목록으로, 먹 회청 가로 띠 제목과 본문 바탕 없는 항목 목록이며 항목마다 돌아갈 절 번호를 `.ref`로 붙인다. `.self-check`에는 문제집의 문항 번호를 글자로 적는다. 노트와 문제집 사이에는 링크(`workbook.html#q1` 등)를 만들지 않는다. 로컬 렌더가 다른 문서로 가는 상대 링크를 `file://` 절대 경로로 굳히므로, 만든 컴퓨터 밖에서는 열리지 않고 로컬 경로가 PDF에 남는다. 항목 수를 장마다 맞출 의무는 없으며, 목록에서 새 사실을 처음 가르치지 않는다.
 
 교수가 수업 중 명시적으로 강조했거나 시험 가능성과 연결한 문장에만 `.lec-wave`의 빨간 물결 밑줄을 쓴다. 편집자가 중요하다고 판단한 문장이나 노트 보충을 수업 강조로 표시하지 않는다. 두 줄 이상에 걸칠 때도 글자와 다음 줄을 가리지 않게 확인한다.
 
@@ -34,11 +34,25 @@
   <p class="chapter-lead">이 장을 읽는 데 필요한 도입 문단.</p>
   <section id="s1-1"><h3>1.1 소절 제목<span class="h-src">05 p.1 · 9/23</span></h3>
     <p><span class="lec-wave">교수가 실제로 강조한 문장.</span></p></section>
-  <section class="chapter-summary"><h3>1장 정리</h3><ul>
+  <section class="chapter-summary"><h3>1장에서 외울 것</h3><ul>
     <li><span class="ref">1.1</span>본문에서 설명한 내용.</li></ul>
-    <p class="self-check"><a href="#q1">연습문제 1</a>로 확인한다.</p></section>
+    <p class="self-check">문제집 1–3번으로 확인한다.</p></section>
 </section>
 ```
+
+## 펼침 블록과 핵심판
+
+핵심층 밖의 내용(writing.md ‘두 층과 분량’)은 `aside.opt`에 두고, 첫 문단 맨 앞에 종류를 `.opt-kind`로 적는다. 종류는 ‘보충’, ‘수업 여담’, ‘더 정확히’ 셋뿐이다. 펼침 블록은 위쪽의 가는 선과 작은 고딕 글씨로 본문과 구별하며 바탕색이나 테두리 상자를 쓰지 않는다. 관련 설명 바로 뒤에 둔다.
+
+```html
+<aside class="opt"><p><span class="opt-kind">보충</span>두 후보로 충분한 이유를 더 따져 보면 다음과 같다.</p></aside>
+<aside class="opt"><p><span class="opt-kind">수업 여담</span>교수는 이 알고리즘의 시간 경계가 최근에 깨졌다고 소개했다.</p></aside>
+<aside class="opt"><p><span class="opt-kind">더 정확히</span>이 예제의 결과는 int가 32비트인 환경을 전제한다.</p></aside>
+```
+
+펼침 블록 안에는 그림·표·코드·수식을 넣을 수 있다. `[n]` 정정 각주는 넣지 않는다. 핵심판에서 블록이 숨겨지면 각주 번호가 끊기기 때문이다. 핵심층에서 펼침 블록 안의 요소로 링크하지 않는다.
+
+핵심판은 notes.html 사본의 `<html>`에 `class="core-only"`를 붙여 렌더한 PDF다. 공통 CSS가 이 클래스에서 `.opt`를 숨기므로 원고를 따로 쓰거나 요약하지 않는다. 웹 편집본의 notes.html에는 이 클래스를 붙이지 않으며, 로컬 렌더에서 전체판과 함께 만든다.
 
 ## 출처·주석·정정
 
@@ -61,7 +75,7 @@
 
 기존 `.fix-e-list`는 장 끝 미주 편집본을 읽기 위한 호환용으로 유지한다. 기존 노트와 동봉 CSS·PDF를 새 각주 방식으로 소급 변환하거나 재출판하지 않는다.
 
-괄호 병기형·정오표형·OX형 정정과 ※ 표시는 쓰지 않는다. 새 짧은 정정은 위 페이지 하단 각주 계약만 쓴다. `.tag/.teacher/.supplement/.fix/.pending`, `.correction*`, `.label/.value`, 수동 `.fraction` 계열은 기존 마크업 호환용이며 새 집필에는 쓰지 않는다. `.figure-aside/.compact`, `figure.narrow`, `.reference-table/.wide-numeric`, `.review-sheet/.appendix` 등은 필요한 문서 구조에 계속 쓸 수 있다. 선택 읽기는 필요한 제목에 자연스럽게 표시한다. 정정 이해에 필요한 재설명의 필요성은 writing.md가 판단한다.
+괄호 병기형·정오표형·OX형 정정과 ※ 표시는 쓰지 않는다. 새 짧은 정정은 위 페이지 하단 각주 계약만 쓴다. `.tag/.teacher/.supplement/.fix/.pending`, `.correction*`, `.label/.value`, 수동 `.fraction` 계열은 기존 마크업 호환용이며 새 집필에는 쓰지 않는다. `.figure-aside/.compact`, `figure.narrow`, `.reference-table/.wide-numeric`, `.review-sheet/.appendix` 등은 필요한 문서 구조에 계속 쓸 수 있다. 선택 읽기는 펼침 블록으로 쓴다. 정정 이해에 필요한 재설명의 필요성은 writing.md가 판단한다.
 
 ## MathJax와 편집 LaTeX
 
