@@ -5,7 +5,7 @@ description: 한 과목·한 주차의 지정 원자료로 설명형 한국어 �
 
 # 설명형 강의노트 제작
 
-웹에서 현재 선택된 Pro와 실제 제공된 도구가 첫 원고·문제집과 편집본을 만든다. PDF는 웹에서 만들지 않는다. 로컬 lecture-week가 받은 편집본을 WeasyPrint 70.0으로 처음 렌더하고, 그 PDF를 쪽별로 판독한다. 모델·권한·도구를 이 파일로 전환했다고 주장하지 않는다. 목표는 개념·이유·중간 과정·조건을 이해하고 새 문제에 적용하는 것이다. 필요한 설명을 분량 목표로 줄이지 않고 학습 목적과 무관한 심화·외부 확장을 제한한다. 반복 설명의 판단은 writing.md를 따른다. 내용은 [writing.md](references/writing.md), 조판은 [design.md](references/design.md)가 소유한다. writing.md와 design.md를 전문으로 읽는다. CSS와 HTML 견본에서는 사용할 구조·스타일·data-latex와 관련 규칙을 확인하며 파생 SVG/MathML 캐시 전문을 지침으로 읽지 않는다. 캐시 무결성·재생성은 도구로 확인한다.
+웹에서 현재 선택된 Pro와 실제 제공된 도구가 첫 원고·문제집과 편집본을 만든다. PDF는 웹에서 만들지 않는다. 로컬 lecture-week가 받은 편집본을 WeasyPrint 70.0으로 처음 렌더하고, 그 PDF를 쪽별로 판독한다. 모델·권한·도구를 이 파일로 전환했다고 주장하지 않는다. 목표는 개념·이유·중간 과정·조건을 이해하고 새 문제에 적용하는 것이다. 필요한 설명을 분량 목표로 줄이지 않고 학습 목적과 무관한 심화·외부 확장을 제한한다. 반복 설명의 판단은 writing.md를 따른다. 내용은 [writing.md](references/writing.md), 조판은 [design.md](references/design.md)가 소유한다. writing.md와 design.md를 전문으로 읽는다. CSS와 HTML 견본에서는 사용할 구조·스타일·data-latex와 관련 규칙을 확인하며 파생 SVG/MathML 캐시 전문을 지침으로 읽지 않는다. 캐시 무결성·재생성은 로컬 렌더 단계에서 도구로 확인한다.
 
 ## 입력과 권한의 경계
 
@@ -24,15 +24,15 @@ description: 한 과목·한 주차의 지정 원자료로 설명형 한국어 �
 | 단계 | 할 일 | 끝에 올릴 것 |
 |---|---|---|
 | S0 | 저장 폴더 준비(아래) | 없음 |
-| S1 | 지침 커밋 고정·전문 읽기, 같은 커밋의 `references/delivery.md`를 메모로 확보, `checkpoint.py`·`delivery.py`를 작업 폴더 `scripts/`로 확보(아래 ‘스크립트 확보’), 원자료 전문 읽기, input-contract·source-inventory(아래 1–2) | `S1 원자료·계약` |
+| S1 | 지침 커밋 고정·전문 읽기, 같은 커밋의 `references/delivery.md`를 메모로 확보, `checkpoint.py`·`delivery.py`·`lecture.css` 확보(아래 ‘스크립트·CSS 확보’), 원자료 전문 읽기, input-contract·source-inventory(아래 1–2) | `S1 원자료·계약` |
 | S2 | notes.html 작성(아래 3) | `S2 학습노트 원고` |
 | S3 | workbook.html 작성(아래 3) | `S3 연습문제` |
 | S4 | 원자료 대조·계산·설명 충분성 자체 검토, coverage 예외 목록(아래 4–5) | `S4 자체 검토` |
 | S5 | HTML 검사, production-note 확정, 전달 세트(아래 6과 ‘전달과 후속 검토’) | 편집본 ZIP |
 
-**저장 폴더(S0, 집필 전).** 연결된 Drive 도구의 폴더 만들기(`create_folder`)·올리기(`upload_file`)·raw 내려받기(`fetch`)·메타데이터(`get_file_metadata`)를 쓴다. `files__materialize`에 의존하지 않는다. 원자료가 있는 과목 폴더 바로 아래에서 이름이 정확히 `빌드`인 폴더를 찾고, 없으면 `create_folder`로 만든다. 그 안에서 `<N>주차`를 같은 방식으로 찾거나 만든다. 그 안에 이번 제작용 `<YYYY-MM-DD HH-MM> 제작` 폴더를 새로 만든다. 같은 이름 폴더가 여럿이면 만든 시각이 가장 이른 것을 쓰고 후보 ID를 모두 기록한다. 고른 과목 폴더와 그 근거, 폴더 ID는 production-note.md에 적는다. 폴더 찾기·만들기가 실패하면 집필을 시작하기 전에 멈추고 관측한 오류를 보고한다. 다른 위치에 저장하는 것으로 대체하지 않는다.
+**저장 폴더(S0, 집필 전).** 연결된 Drive 도구의 폴더 만들기(`create_folder`)·올리기(`upload_file`)·raw 내려받기(`fetch`)·메타데이터(`get_file_metadata`)를 쓴다. `files__materialize`에 의존하지 않는다. 원자료가 있는 과목 폴더 바로 아래에서 이름이 정확히 `빌드`인 폴더를 찾고, 없으면 `create_folder`로 만든다. 그 안에서 `<N>주차`를 같은 방식으로 찾거나 만든다. 그 안에 이번 제작용 `<YYYY-MM-DD HH-MM> 제작` 폴더를 새로 만든다. 같은 이름 폴더가 여럿이면 만든 시각이 가장 이른 것을 쓰고 후보 ID를 모두 기록한다. 고른 과목 폴더와 그 근거, 과목 폴더와 이번 제작 폴더의 ID는 production-note.md에 적는다. 폴더 찾기·만들기가 실패하면 집필을 시작하기 전에 멈추고 관측한 오류를 보고한다. 다른 위치에 저장하는 것으로 대체하지 않는다.
 
-**스크립트 확보(S1).** 실행 환경은 GitHub에서 파일을 직접 내려받지 못하므로 스크립트를 옮겨 적지 않고 Drive에서 받는다. Drive `대학교/웹 강의노트 스크립트/`의 `web-lecture-notes-scripts-<버전>.zip`(버전은 고정 커밋의 `.codex-plugin/plugin.json`)을 파일 ID로 raw 내려받아 작업 폴더에 푼다. 안의 `scripts/checkpoint.py`·`scripts/delivery.py`는 Git blob SHA가 고정 커밋의 `skills/lecture-notes-chat/scripts/` 같은 파일과 같을 때만 쓴다. ZIP이 없거나 해시가 다르면 그 사실을 production-note.md에 적고 고정 커밋에서 두 파일을 가져와 쓴다. `render.py`·`css_resources.py`는 로컬 렌더 전용이므로 받지 않는다.
+**스크립트·CSS 확보(S1).** 실행 환경은 GitHub에서 파일을 직접 내려받지 못하므로 옮겨 적지 않고 Drive에서 받는다. Drive `대학교/웹 강의노트 스크립트/`의 `web-lecture-notes-scripts-<버전>.zip`(버전은 고정 커밋의 `.codex-plugin/plugin.json`)을 파일 ID로 raw 내려받아 작업 폴더 밖 새 폴더에 푼다. 안의 `scripts/checkpoint.py`·`scripts/delivery.py`·`assets/lecture.css`는 Git blob SHA가 고정 커밋 `skills/lecture-notes-chat/` 아래 같은 경로 파일과 같을 때만 쓴다. 비교값은 GitHub 도구가 주는 파일·트리 메타데이터의 blob SHA를 쓰며, 비교하려고 파일 전문을 읽지 않는다. ZIP이 없거나 해시가 다르면 그 사실을 production-note.md에 적고, 해당 파일만 GitHub 도구로 같은 커밋에서 읽어 쓴 뒤 다시 대조한다. 두 스크립트는 작업 폴더 `scripts/`에, lecture.css는 작업 폴더 최상위에 그대로 복사한다. `render.py`·`css_resources.py`는 로컬 렌더 전용이므로 받지 않는다.
 
 **단계 저장.** S1–S4가 각각 끝나면 `python scripts/checkpoint.py create <작업 폴더> <새 ZIP> --label 'S<k> <단계명>'`으로 작업 폴더 전체 ZIP을 만든다. 출력이 `CHECKPOINT_VERIFIED`일 때만 이번 제작 폴더에 **새 파일로** 한 번 올린다. 이름은 `<과목> <N>주차 S<k> <단계명>.zip`이다. 업로드 응답의 이름·크기를 로컬 ZIP과 비교하며, 메타데이터를 따로 조회하지 않는다. 파일 ID와 SHA-256은 production-note.md에 적는다. 체크포인트는 재개용 사본이며 전달본이 아니다.
 
