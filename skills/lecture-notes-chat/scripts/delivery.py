@@ -1,10 +1,12 @@
 """Freeze the web edit handoff: HTML, CSS, assets and records in one ZIP.
 
-Standard library only. The web creates no PDF: local lecture-week renders the
-handoff with WeasyPrint 70.0 first. Never render, execute package code or publish.
+Standard library only and self-contained: the web needs no other script file.
+The web creates no PDF: local lecture-week renders the handoff with WeasyPrint
+70.0 first. Never render, execute package code or publish.
 Legacy handoff_version 1 packages (with PDFs) are still inspected for local review."""
 from html.parser import HTMLParser
 from pathlib import Path, PurePosixPath
+from urllib.parse import urlparse, unquote
 import argparse
 import hashlib
 import io
@@ -13,7 +15,6 @@ import os
 import re
 import shutil
 import stat
-import sys
 import tempfile
 import unicodedata
 import zipfile
@@ -148,6 +149,95 @@ class Manuscript(HTMLParser):
             self.math += 1
 
 
+# References, local_resource and css_resources are copies of the local renderer's
+# render.References, render.local_resource and css_resources.css_resources, so the
+# web downloads only this file. test_web_delivery keeps the copies identical.
+class References(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.resources, self.links, self.errors, self.styles = [], [], [], []
+        self.ids = set()
+        self.in_style = False
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if a.get('id'):
+            if a['id'] in self.ids:
+                self.errors.append(f"Duplicate id: {a['id']}")
+            self.ids.add(a['id'])
+        if tag == 'a' and (a.get('href') or '').startswith('#'):
+            self.links.append(unquote(a['href'][1:]))
+        if tag in ('img', 'source'):
+            if tag == 'img' and not a.get('src'):
+                self.errors.append('Image has no src')
+            if a.get('src'):
+                self.resources.append(a['src'])
+            if a.get('srcset'):
+                self.errors.append('Use one explicit bundled src instead of srcset')
+        if tag == 'link' and 'stylesheet' in (a.get('rel') or '').split():
+            self.resources.append(a.get('href', ''))
+        if tag in ('script', 'base', 'iframe', 'object', 'embed'):
+            self.errors.append(f'Unsupported active/base element: {tag}')
+        if any(k.lower().startswith('on') for k in a):
+            self.errors.append('Inline event handlers are unsupported')
+        if 'style' in a:
+            if a['style'] is None:
+                self.errors.append('Empty style attribute')
+            else:
+                self.styles.append(a['style'])
+        if tag == 'style':
+            self.in_style = True
+
+    def handle_endtag(self, tag):
+        if tag == 'style':
+            self.in_style = False
+
+    def handle_data(self, data):
+        if self.in_style:
+            self.styles.append(data)
+
+
+def local_resource(url, root):
+    parsed = urlparse(url)
+    if parsed.scheme == 'data':
+        return None
+    if parsed.scheme != 'file' or parsed.netloc not in ('', 'localhost'):
+        raise ValueError(f'Use a bundled local resource, not: {url}')
+    path = Path(unquote(parsed.path)).resolve()
+    if not path.is_relative_to(root.resolve()):
+        raise ValueError(f'Resource outside authored package: {path}')
+    if not path.is_file():
+        raise FileNotFoundError(f'Missing resource: {path}')
+    return path
+
+
+def css_resources(text):
+    import tinycss2
+    def walk(tokens):
+        for token in tokens:
+            if token.type == 'url':
+                yield token.value
+            elif token.type == 'function' and token.lower_name == 'url':
+                values = [t for t in token.arguments if t.type not in ('whitespace', 'comment')]
+                if len(values) != 1 or values[0].type != 'string':
+                    raise ValueError('Malformed CSS url()')
+                yield values[0].value
+            elif hasattr(token, 'content') and token.content is not None:
+                yield from walk(token.content)
+            elif hasattr(token, 'arguments'):
+                yield from walk(token.arguments)
+    rules = tinycss2.parse_stylesheet(text, skip_comments=True, skip_whitespace=True)
+    for rule in rules:
+        if rule.type == 'at-rule' and rule.lower_at_keyword == 'import':
+            values = [t for t in rule.prelude if t.type not in ('whitespace', 'comment')]
+            if values and values[0].type == 'string':
+                yield values[0].value
+        yield from walk(getattr(rule, 'prelude', []))
+        yield from walk(getattr(rule, 'content', None) or [])
+    # Inline declarations also appear as parser error tokens; scan their components.
+    yield from walk(tinycss2.parse_component_value_list(text))
+
+
 CSS_COMMENT = re.compile(r'/\*.*?\*/', re.S)
 CSS_URL = re.compile(r"""url\(\s*(?:"([^"]*)"|'([^']*)'|([^)'"\s]+))\s*\)""", re.I)
 CSS_IMPORT = re.compile(r"""@import\s+(?:"([^"]*)"|'([^']*)')""", re.I)
@@ -163,7 +253,6 @@ def css_references(text):
         found = [next(g for g in m.groups() if g is not None) for m in CSS_URL.finditer(text)]
         found += [next(g for g in m.groups() if g is not None) for m in CSS_IMPORT.finditer(text)]
         return found, 'stdlib'
-    from css_resources import css_resources
     return list(css_resources(text)), 'tinycss2'
 
 
@@ -174,13 +263,9 @@ def html_check(path):
     inside CSS) must be bundled. Page-note markup and math conversion are
     checked by the local WeasyPrint 70.0 render."""
     from urllib.parse import urljoin
-    here = str(Path(__file__).resolve().parent)
-    if here not in sys.path:
-        sys.path.insert(0, here)
-    import render
     path = Path(path).resolve()
     text = path.read_text(encoding='utf-8')
-    parser = render.References()
+    parser = References()
     parser.feed(text)
     for target in parser.links:
         if target and target not in parser.ids:
@@ -193,7 +278,7 @@ def html_check(path):
         parsers.add(used)
         return found
     def inspect(resource, base):
-        p = render.local_resource(urljoin(base, resource), path.parent)
+        p = local_resource(urljoin(base, resource), path.parent)
         if p is None or p in seen:
             return
         seen.add(p)

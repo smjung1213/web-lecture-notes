@@ -2,7 +2,7 @@
 
 강의자료(PDF)와 강의 전사본으로 한국어 **학습노트**와 **연습문제**를 만드는 ChatGPT 웹 스킬이다. 한 번에 한 과목·한 주차를 다루며, 결과는 PDF가 아니라 편집할 수 있는 HTML·CSS·자산 묶음(편집본 ZIP)이다.
 
-현재 버전은 **0.8.4**이다. 버전별 변경 내용은 커밋 기록에 있다.
+현재 버전은 **0.8.5**이다. 버전별 변경 내용은 커밋 기록에 있다.
 
 > 개인 학습용으로 만든 작업 흐름이다. Google Drive 폴더 구조, 로컬 검토 단계 같은 전제가 이 사용 방식에 맞춰져 있다.
 
@@ -31,6 +31,7 @@ Google Drive 원자료 ─▶ ChatGPT 웹(Pro) 집필 ─▶ 편집본 ZIP ─�
 
 - GitHub와 Google Drive를 연결한 ChatGPT 웹
 - Drive의 `대학교/<학기>/<과목>/` 아래에 `강의 자료`, `강의 녹음`(전사본), `강의 노트`, `빌드` 폴더
+- Drive의 `대학교/웹 강의노트 스크립트/`에 버전별 스크립트 ZIP(`web-lecture-notes-scripts-<버전>.zip`, 이 저장소의 `checkpoint.py`·`delivery.py`와 같은 바이트). ChatGPT 실행 환경이 GitHub에서 파일을 직접 받지 못해 Drive에서 받는다. 없으면 Pro가 저장소에서 가져와 쓴다
 
 **요청**
 
@@ -51,7 +52,7 @@ Google Drive 원자료 ─▶ ChatGPT 웹(Pro) 집필 ─▶ 편집본 ZIP ─�
 | [`references/delivery.md`](skills/lecture-notes-chat/references/delivery.md) | 편집본 ZIP 구성과 검사 |
 | [`references/learning-contract.md`](skills/lecture-notes-chat/references/learning-contract.md) | 독자·선수지식·학습 방식·목표를 집필과 검토에 같게 전달하는 형식 |
 | `assets/lecture.css`, `assets/layout-sample.*` | 기본 스타일과 합성 견본(HTML·PDF·그림) |
-| `scripts/checkpoint.py`, `scripts/delivery.py` | 체크포인트 ZIP 생성·복원, 편집본 검사·포장. Python 표준 라이브러리만 쓴다 |
+| `scripts/checkpoint.py`, `scripts/delivery.py` | 체크포인트 ZIP 생성·복원, 편집본 검사·포장. Python 표준 라이브러리만 쓰고 웹에서 쓰는 스크립트는 이 둘뿐이다 |
 | `scripts/render.py`, `typeset.cjs` 외 | 로컬에서 PDF를 만드는 렌더러. LaTeX를 MathJax로 정적 SVG·MathML로 바꾼 뒤 WeasyPrint 70.0에 넘긴다(Python 의존성 `requirements.txt`, Node 18 이상 `package.json`) |
 | `prompts/` | 웹 제작 요청문과 로컬 검토 안내 |
 

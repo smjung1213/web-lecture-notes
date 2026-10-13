@@ -24,7 +24,7 @@ description: 한 과목·한 주차의 지정 원자료로 설명형 한국어 �
 | 단계 | 할 일 | 끝에 올릴 것 |
 |---|---|---|
 | S0 | 저장 폴더 준비(아래) | 없음 |
-| S1 | 지침 커밋 고정·전문 읽기, 같은 커밋의 `scripts/checkpoint.py`·`delivery.py`·`render.py`·`css_resources.py`와 `references/delivery.md`를 작업 폴더 `scripts/`·메모로 확보, 원자료 전문 읽기, input-contract·source-inventory(아래 1–2) | `S1 원자료·계약` |
+| S1 | 지침 커밋 고정·전문 읽기, 같은 커밋의 `references/delivery.md`를 메모로 확보, `checkpoint.py`·`delivery.py`를 작업 폴더 `scripts/`로 확보(아래 ‘스크립트 확보’), 원자료 전문 읽기, input-contract·source-inventory(아래 1–2) | `S1 원자료·계약` |
 | S2 | notes.html 작성(아래 3) | `S2 학습노트 원고` |
 | S3 | workbook.html 작성(아래 3) | `S3 연습문제` |
 | S4 | 원자료 대조·계산·설명 충분성 자체 검토, coverage 예외 목록(아래 4–5) | `S4 자체 검토` |
@@ -32,11 +32,13 @@ description: 한 과목·한 주차의 지정 원자료로 설명형 한국어 �
 
 **저장 폴더(S0, 집필 전).** 연결된 Drive 도구의 폴더 만들기(`create_folder`)·올리기(`upload_file`)·raw 내려받기(`fetch`)·메타데이터(`get_file_metadata`)를 쓴다. `files__materialize`에 의존하지 않는다. 원자료가 있는 과목 폴더 바로 아래에서 이름이 정확히 `빌드`인 폴더를 찾고, 없으면 `create_folder`로 만든다. 그 안에서 `<N>주차`를 같은 방식으로 찾거나 만든다. 그 안에 이번 제작용 `<YYYY-MM-DD HH-MM> 제작` 폴더를 새로 만든다. 같은 이름 폴더가 여럿이면 만든 시각이 가장 이른 것을 쓰고 후보 ID를 모두 기록한다. 고른 과목 폴더와 그 근거, 폴더 ID는 production-note.md에 적는다. 폴더 찾기·만들기가 실패하면 집필을 시작하기 전에 멈추고 관측한 오류를 보고한다. 다른 위치에 저장하는 것으로 대체하지 않는다.
 
+**스크립트 확보(S1).** 실행 환경은 GitHub에서 파일을 직접 내려받지 못하므로 스크립트를 옮겨 적지 않고 Drive에서 받는다. Drive `대학교/웹 강의노트 스크립트/`의 `web-lecture-notes-scripts-<버전>.zip`(버전은 고정 커밋의 `.codex-plugin/plugin.json`)을 파일 ID로 raw 내려받아 작업 폴더에 푼다. 안의 `scripts/checkpoint.py`·`scripts/delivery.py`는 Git blob SHA가 고정 커밋의 `skills/lecture-notes-chat/scripts/` 같은 파일과 같을 때만 쓴다. ZIP이 없거나 해시가 다르면 그 사실을 production-note.md에 적고 고정 커밋에서 두 파일을 가져와 쓴다. `render.py`·`css_resources.py`는 로컬 렌더 전용이므로 받지 않는다.
+
 **단계 저장.** S1–S4가 각각 끝나면 `python scripts/checkpoint.py create <작업 폴더> <새 ZIP> --label 'S<k> <단계명>'`으로 작업 폴더 전체 ZIP을 만든다. 출력이 `CHECKPOINT_VERIFIED`일 때만 이번 제작 폴더에 **새 파일로** 한 번 올린다. 이름은 `<과목> <N>주차 S<k> <단계명>.zip`이다. 업로드 응답의 이름·크기를 로컬 ZIP과 비교하며, 메타데이터를 따로 조회하지 않는다. 파일 ID와 SHA-256은 production-note.md에 적는다. 체크포인트는 재개용 사본이며 전달본이 아니다.
 
 **금지.** 기존 Drive 파일·폴더를 교체·이름 변경·삭제·이동하지 않는다. `빌드` 폴더 밖에 쓰지 않는다. 원자료 폴더 안에는 `빌드` 폴더를 만드는 것 외에 아무것도 하지 않는다.
 
-**응답 안 자동 재개.** 단계를 시작할 때와 도구 오류 뒤에 작업 폴더가 실제로 있는지 명령으로 확인한다. 작업 폴더나 파일이 사라졌으면 마지막으로 올린 단계 ZIP을 파일 ID로 raw 내려받는다. SHA-256이 올릴 때와 같은지 확인하고 `checkpoint.py restore`로 새 폴더에 복원한 뒤, 그 단계 다음부터 스스로 잇는다. 체크포인트가 아직 없으면 S1부터 다시 한다. scripts도 사라졌으면 고정 커밋에서 S1과 같은 스크립트를 다시 가져온다. 사용자에게 첨부나 조치를 요청하지 않는다. 초기화와 복원 경로는 production-note.md에 적는다.
+**응답 안 자동 재개.** 단계를 시작할 때와 도구 오류 뒤에 작업 폴더가 실제로 있는지 명령으로 확인한다. 작업 폴더나 파일이 사라졌으면 마지막으로 올린 단계 ZIP을 파일 ID로 raw 내려받는다. SHA-256이 올릴 때와 같은지 확인하고 `checkpoint.py restore`로 새 폴더에 복원한 뒤, 그 단계 다음부터 스스로 잇는다. 체크포인트가 아직 없으면 S1부터 다시 한다. scripts도 사라졌으면 S1과 같은 방법으로 다시 확보한다. 사용자에게 첨부나 조치를 요청하지 않는다. 초기화와 복원 경로는 production-note.md에 적는다.
 
 **응답이 전달 전에 끝난 경우(‘생각 실패’·연결 해제 포함).** 이때만 사용자가 같은 대화에 첨부 없이 ‘계속’을 보낸다. 작업 폴더를 확인하고, 없으면 이번 제작 폴더에서 가장 높은 단계 ZIP으로 같은 방법으로 복원해 잇는다. 이번 제작 폴더는 이 대화가 S0에서 만든 폴더다(대화에 남은 기록이나 production-note의 폴더 ID). 사용자가 폴더나 체크포인트를 지정하면 그것을 쓴다. 이 대화의 폴더를 확인할 수 없을 때만 가장 최근 `… 제작` 폴더를 쓰고 그 근거를 적는다. 새 제작 폴더를 만들지 않으며, 체크포인트가 없을 때만 같은 폴더로 S1부터 다시 한다.
 

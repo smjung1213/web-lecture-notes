@@ -4,7 +4,7 @@
 
 ## 실행
 
-웹 제작에서는 S5에서 전달 세트를 만든다(SKILL.md ‘응답 하나로 끝까지 하고 단계마다 Drive에 저장한다’). 재개용 체크포인트(`checkpoint.py`)는 전달 세트가 아니다. `delivery.py`는 Python 표준 라이브러리만 쓰며 같은 scripts 폴더의 `render.py`·`css_resources.py`에서 HTML 검사 부분만 가져온다. WeasyPrint·BeautifulSoup·pypdf·MathJax는 필요 없다. 받은 묶음의 스크립트를 실행하지 않는다.
+웹 제작에서는 S5에서 전달 세트를 만든다(SKILL.md ‘응답 하나로 끝까지 하고 단계마다 Drive에 저장한다’). 재개용 체크포인트(`checkpoint.py`)는 전달 세트가 아니다. `delivery.py`는 Python 표준 라이브러리만 쓰고 다른 스크립트 파일 없이 실행된다. HTML 검사 코드는 로컬 렌더러(`render.py`·`css_resources.py`)의 것과 같은 사본이다. WeasyPrint·BeautifulSoup·pypdf·MathJax는 필요 없다. 받은 묶음의 스크립트를 실행하지 않는다.
 
 ```sh
 python scripts/delivery.py /작업/원고 /전달/handoff-01 \
