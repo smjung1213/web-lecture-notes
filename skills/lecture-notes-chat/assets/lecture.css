@@ -244,3 +244,9 @@ pre.output::before {  content:"출력"; display:block; font-family:"Noto Sans CJ
 /* 가로 크롭을 나란히 놓을 때도 각 그림·캡션은 블록으로 묶는다. */
 .fig-row { display:flex; gap:4mm; align-items:flex-start; }
 .fig-row > figure { min-width:0; }
+/* 펼침 블록: 핵심층 밖의 보충·수업 여담·더 정확히. 게시 학습노트(핵심판)에서는 숨기고, html.with-opt 로 렌더한 전체판에서만 보인다. */
+.opt { margin:0 0 4.8mm; padding:1.8mm 0 0; border-top:.4pt solid var(--rule); font-family:"Noto Sans CJK KR",sans-serif; font-size:9.5pt; line-height:1.65; color:var(--soft); }
+.opt p { margin:0 0 1.6mm; }
+.opt > :last-child { margin-bottom:0; }
+.opt-kind { font-weight:700; color:var(--ink); margin-right:2.5mm; }
+html:not(.with-opt) .opt { display:none; }

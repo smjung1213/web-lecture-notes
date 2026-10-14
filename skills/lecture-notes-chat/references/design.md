@@ -25,7 +25,7 @@
 
 ## 복습 경로와 교수 강조의 표현
 
-장 도입·장 정리가 필요한지는 writing.md가 판단한다. `.chapter-lead`는 라벨 없이 조금 큰 도입 문단이다. `.chapter-summary`는 먹 회청 가로 띠 제목과 본문 바탕 없는 항목 목록이며, 항목마다 돌아갈 절 번호를 `.ref`로 붙인다. 필요하면 `.self-check`에 실제 연습문제 링크를 둔다. 장마다 같은 개수를 두는 의무는 없으며, 요약에서 새 사실을 처음 가르치지 않는다.
+장 도입문과 장 끝 ‘외울 것’ 목록의 내용은 writing.md가 정한다. `.chapter-lead`는 라벨 없이 조금 큰 도입 문단이다. `.chapter-summary`는 장 끝의 ‘외울 것’ 목록으로, 먹 회청 가로 띠 제목과 본문 바탕 없는 항목 목록이며 항목마다 돌아갈 절 번호를 `.ref`로 붙인다. `.self-check`에는 문제집의 문항 번호를 글자로 적는다. 노트와 문제집 사이에는 링크(`workbook.html#q1` 등)를 만들지 않는다. 로컬 렌더가 다른 문서로 가는 상대 링크를 `file://` 절대 경로로 굳히므로, 만든 컴퓨터 밖에서는 열리지 않고 로컬 경로가 PDF에 남는다. 항목 수를 장마다 맞출 의무는 없으며, 목록에서 새 사실을 처음 가르치지 않는다.
 
 교수가 수업 중 명시적으로 강조했거나 시험 가능성과 연결한 문장에만 `.lec-wave`의 빨간 물결 밑줄을 쓴다. 편집자가 중요하다고 판단한 문장이나 노트 보충을 수업 강조로 표시하지 않는다. 두 줄 이상에 걸칠 때도 글자와 다음 줄을 가리지 않게 확인한다.
 
@@ -34,11 +34,25 @@
   <p class="chapter-lead">이 장을 읽는 데 필요한 도입 문단.</p>
   <section id="s1-1"><h3>1.1 소절 제목<span class="h-src">05 p.1 · 9/23</span></h3>
     <p><span class="lec-wave">교수가 실제로 강조한 문장.</span></p></section>
-  <section class="chapter-summary"><h3>1장 정리</h3><ul>
+  <section class="chapter-summary"><h3>1장에서 외울 것</h3><ul>
     <li><span class="ref">1.1</span>본문에서 설명한 내용.</li></ul>
-    <p class="self-check"><a href="#q1">연습문제 1</a>로 확인한다.</p></section>
+    <p class="self-check">문제집 1–3번으로 확인한다.</p></section>
 </section>
 ```
+
+## 펼침 블록과 핵심판
+
+핵심층 밖의 내용(writing.md ‘두 층과 분량’)은 `aside.opt`에 두고, 첫 문단 맨 앞에 종류를 `.opt-kind`로 적는다. 종류는 ‘보충’, ‘수업 여담’, ‘더 정확히’ 셋뿐이다. 펼침 블록은 위쪽의 가는 선과 작은 고딕 글씨로 본문과 구별하며 바탕색이나 테두리 상자를 쓰지 않는다. 관련 설명 바로 뒤에 둔다.
+
+```html
+<aside class="opt"><p><span class="opt-kind">보충</span>두 후보로 충분한 이유를 더 따져 보면 다음과 같다.</p></aside>
+<aside class="opt"><p><span class="opt-kind">수업 여담</span>교수는 이 알고리즘의 시간 경계가 최근에 깨졌다고 소개했다.</p></aside>
+<aside class="opt"><p><span class="opt-kind">더 정확히</span>C 표준은 int의 최소 범위만 정하므로 16비트 int인 환경도 있다. 본문 예제는 수업 환경인 32비트 int를 전제한다.</p></aside>
+```
+
+펼침 블록 안에는 그림·표·코드·수식을 넣을 수 있다. `[n]` 정정 각주는 넣지 않는다. 핵심판에서 블록이 숨겨지면 각주 번호가 끊기기 때문이다. 핵심층에서 펼침 블록 안의 요소로 링크하지 않는다.
+
+게시하는 학습노트 PDF가 핵심판이다. 공통 CSS가 `.opt`를 기본으로 숨기므로 원고를 따로 쓰거나 요약하지 않는다. 펼침 블록까지 보이는 전체판은 요청이 있을 때만 로컬에서 `<html>`에 `class="with-opt"`를 붙인 사본으로 렌더하며 게시 폴더에 저장하지 않는다. notes.html에는 이 클래스를 붙이지 않는다. 견본의 펼침 블록도 PDF에는 보이지 않는다.
 
 ## 출처·주석·정정
 
@@ -61,7 +75,7 @@
 
 기존 `.fix-e-list`는 장 끝 미주 편집본을 읽기 위한 호환용으로 유지한다. 기존 노트와 동봉 CSS·PDF를 새 각주 방식으로 소급 변환하거나 재출판하지 않는다.
 
-괄호 병기형·정오표형·OX형 정정과 ※ 표시는 쓰지 않는다. 새 짧은 정정은 위 페이지 하단 각주 계약만 쓴다. `.tag/.teacher/.supplement/.fix/.pending`, `.correction*`, `.label/.value`, 수동 `.fraction` 계열은 기존 마크업 호환용이며 새 집필에는 쓰지 않는다. `.figure-aside/.compact`, `figure.narrow`, `.reference-table/.wide-numeric`, `.review-sheet/.appendix` 등은 필요한 문서 구조에 계속 쓸 수 있다. 선택 읽기는 필요한 제목에 자연스럽게 표시한다. 정정 이해에 필요한 재설명의 필요성은 writing.md가 판단한다.
+괄호 병기형·정오표형·OX형 정정과 ※ 표시는 쓰지 않는다. 새 짧은 정정은 위 페이지 하단 각주 계약만 쓴다. `.tag/.teacher/.supplement/.fix/.pending`, `.correction*`, `.label/.value`, 수동 `.fraction` 계열은 기존 마크업 호환용이며 새 집필에는 쓰지 않는다. `.figure-aside/.compact`, `figure.narrow`, `.reference-table/.wide-numeric`, `.review-sheet/.appendix` 등은 필요한 문서 구조에 계속 쓸 수 있다. 선택 읽기는 펼침 블록으로 쓴다. 정정 이해에 필요한 재설명의 필요성은 writing.md가 판단한다.
 
 ## MathJax와 편집 LaTeX
 
