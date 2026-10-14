@@ -4,7 +4,7 @@
 
 디자인 기준 v3.4(2026-09-29)는 앞으로 새로 만드는 노트에만 적용한다. **기존 노트·편집본은 동봉된 lecture.css를 유지하며 새 CSS로 재조판·재출판하지 않는다.** 원자료·사용자가 넣은 파일·받은 산출물·기존 게시 PDF는 보존하고, 출력은 새 이름으로 만든다.
 
-`assets/lecture.css`와 `layout-sample.html`을 출발점으로 한다. 견본 A(학습노트)와 견본 B(연습문제), `sample-process.svg`와 300dpi 합성 크롭 `sample-slide-crop.png`는 표현 예시이며 실제 강의자료·문제·구성·쪽수의 기준이 아니다. 내용의 필요성과 깊이는 writing.md가, 그 표현은 이 문서가 소유한다. 견본에는 펼침 블록의 예가 없고, 장 끝 목록의 제목(‘정리’)과 연습문제 링크가 이전 형식으로 남아 있다. 이 둘은 견본이 아니라 아래 규칙을 따른다.
+`assets/lecture.css`와 `layout-sample.html`을 출발점으로 한다. 견본 A(학습노트)와 견본 B(연습문제), `sample-process.svg`와 300dpi 합성 크롭 `sample-slide-crop.png`는 표현 예시이며 실제 강의자료·문제·구성·쪽수의 기준이 아니다. 내용의 필요성과 깊이는 writing.md가, 그 표현은 이 문서가 소유한다.
 
 기본은 A4, 좌우 30mm·위 22mm·아래 20mm, 명조 본문 10.5pt·줄 간격 1.72, 왼쪽 정렬과 `word-break:keep-all`이다. 한국어 양끝 정렬은 하지 않는다. 본문은 `Noto Serif CJK KR`, 제목·정보 줄·목차·출처·캡션·표·정리 번호·해설 라벨은 `Noto Sans CJK KR`, 코드는 `Noto Sans Mono CJK KR`을 쓴다. 렌더 환경에서 `fc-list : family`로 세 글꼴을 확인한다. 없으면 조용히 대체하지 않고 해당 조판 단계를 미완료로 보고한다(관리 렌더러도 렌더 전에 확인한다). 원격 폰트에 의존하거나 폰트 파일을 배포하지 않는다.
 
@@ -47,12 +47,12 @@
 ```html
 <aside class="opt"><p><span class="opt-kind">보충</span>두 후보로 충분한 이유를 더 따져 보면 다음과 같다.</p></aside>
 <aside class="opt"><p><span class="opt-kind">수업 여담</span>교수는 이 알고리즘의 시간 경계가 최근에 깨졌다고 소개했다.</p></aside>
-<aside class="opt"><p><span class="opt-kind">더 정확히</span>이 예제의 결과는 int가 32비트인 환경을 전제한다.</p></aside>
+<aside class="opt"><p><span class="opt-kind">더 정확히</span>C 표준은 int의 최소 범위만 정하므로 16비트 int인 환경도 있다. 본문 예제는 수업 환경인 32비트 int를 전제한다.</p></aside>
 ```
 
 펼침 블록 안에는 그림·표·코드·수식을 넣을 수 있다. `[n]` 정정 각주는 넣지 않는다. 핵심판에서 블록이 숨겨지면 각주 번호가 끊기기 때문이다. 핵심층에서 펼침 블록 안의 요소로 링크하지 않는다.
 
-핵심판은 notes.html 사본의 `<html>`에 `class="core-only"`를 붙여 렌더한 PDF다. 공통 CSS가 이 클래스에서 `.opt`를 숨기므로 원고를 따로 쓰거나 요약하지 않는다. 웹 편집본의 notes.html에는 이 클래스를 붙이지 않으며, 로컬 렌더에서 전체판과 함께 만든다.
+게시하는 학습노트 PDF가 핵심판이다. 공통 CSS가 `.opt`를 기본으로 숨기므로 원고를 따로 쓰거나 요약하지 않는다. 펼침 블록까지 보이는 전체판은 요청이 있을 때만 로컬에서 `<html>`에 `class="with-opt"`를 붙인 사본으로 렌더하며 게시 폴더에 저장하지 않는다. notes.html에는 이 클래스를 붙이지 않는다. 견본의 펼침 블록도 PDF에는 보이지 않는다.
 
 ## 출처·주석·정정
 
