@@ -73,14 +73,14 @@ figure>img {  display:block; margin:0 auto; }
 .figure-aside .aside-text { display:block; flex:1; min-width:0; padding:0; }
 .figure-aside h3 { margin-top:0; }
 table {  border-collapse:collapse; width:100%; margin:4mm 0 5mm; font-size:10pt; line-height:1.55; }
-caption {  font-family:"Noto Sans CJK KR",sans-serif; font-size:9.5pt; line-height:1.55; color:#45535d; text-align:left; margin-bottom:1.5mm; }
+caption {  font-family:"Noto Sans CJK KR",sans-serif; font-size:9.5pt; line-height:1.55; color:#45535d; text-align:left; margin-bottom:1.5mm; break-after:avoid; }
 thead {  display:table-header-group; }
 th {  font-family:"Noto Sans CJK KR",sans-serif; background:#edf2f3; text-align:left; border-top:.5pt solid #708792; border-bottom:.5pt solid #708792; font-family:"Noto Sans CJK KR",sans-serif; padding:1.6mm 2mm; }
 td {  font-family:"Noto Sans CJK KR",sans-serif; padding:1.6mm 2mm; border-bottom:.35pt solid #c7ced3; }
 tr {  break-inside:avoid; }
 .keep { break-inside:avoid; }
-code {  font-family:"Noto Sans Mono CJK KR","Noto Sans Mono",monospace; background:#eff1f3; padding:0 .6mm; font-size:.95em; }
-pre {  font-family:"Noto Sans Mono CJK KR","Noto Sans Mono",monospace; background:#1e222a; color:#edf0f5; padding:3.5mm 4mm; margin:2mm 0; white-space:pre-wrap; font-size:9.5pt; line-height:1.55; border:none; }
+code {  font-family:"Maple Mono","Noto Sans Mono CJK KR",monospace; font-variant-ligatures:none; background:#eff1f3; padding:0 .6mm; font-size:.95em; }
+pre {  font-family:"Maple Mono","Noto Sans Mono CJK KR",monospace; font-variant-ligatures:none; background:#1e222a; color:#edf0f5; padding:3.5mm 4mm; margin:2mm 0; white-space:pre-wrap; font-size:9.5pt; line-height:1.55; border:none; }
 pre code {  color:inherit; background:none; padding:0; font-size:inherit; }
 .code-wrap {  break-inside:avoid; margin:5mm 0; }
 .kw {  color:#cbb2ff; }
